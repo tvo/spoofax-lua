@@ -1,0 +1,7 @@
+/.cache
+/include
+*.class
+
+*.generated.*
+!/lib/editor-common.generated.str
+!/build.generated.xml
