@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?eclipse version="3.0"?>
+
+<plugin>
+       <extension point="org.eclipse.imp.runtime.languageDescription">
+          <language extensions="lua" description="Lua" language="Lua" derivedFrom="DynamicRoot" validator="lua.LuaValidator" validatorClass="lua.LuaValidator"></language>
+       </extension>
+       <extension id="lua.parser" name="Lua Parser" point="org.eclipse.imp.runtime.parser">
+          <parser class="lua.LuaParseController" language="Lua">
+          </parser>
+       </extension>    
+    </plugin>
