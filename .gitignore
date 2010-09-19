@@ -1,6 +1,7 @@
 /.cache
 /include
 *.class
+*.aterm
 
 *.generated.*
 !/lib/editor-common.generated.str
