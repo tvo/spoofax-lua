@@ -3,44 +3,78 @@ module Common
 exports
 
   lexical syntax
-  
-    [a-zA-Z][a-zA-Z0-9\_]* -> ID
-    "-"? [0-9]+            -> INT
-    
-    "\"" StringChar* "\"" -> STRING
-    ~[\"\n]               -> StringChar
-    "\\\""                -> StringChar
-    BackSlashChar         -> StringChar
-    "\\"                  -> BackSlashChar
-    
+
+    %% Keywords may not be used as identifier
+    %% (There is ambiguity, at least for "function")
+    %% http://www.lua.org/manual/5.1/manual.html#2
+    Keyword -> ID {reject}
+    "and"    | "break"  | "do"   | "else"     | "elseif" |
+    "end"    | "false"  | "for"  | "function" | "if"     |
+    "in"     | "local"  | "nil"  | "not"      | "or"     |
+    "repeat" | "return" | "then" | "true"     | "until"  | "while" -> Keyword
+
+    %% Identifiers
+    [a-zA-Z\_][a-zA-Z0-9\_]* -> ID
+
+    %% Numeric literals
+    [0-9]+ Exponent?            -> NUMBER
+    [0-9]* "." [0-9]+ Exponent? -> NUMBER
+    [0-9]+ "." Exponent?        -> NUMBER
+    [eE] "-"? [0-9]+            -> Exponent
+
+    %% Hexadecimal literals
+    [0][xX] [0-9a-fA-F]+        -> NUMBER
+
+    %% Double- and single-quoted strings
+    "\"" DStringChar* "\""      -> STRING
+    "'" SStringChar* "'"        -> STRING
+    ~[\"\\\n\r] | StringChar    -> DStringChar
+    ~[\'\\\n\r] | StringChar    -> SStringChar
+    "\\" [0-9abfnrtv\\\"\'\n\r] -> StringChar
+
+    %% Multiline/raw string (no escapes)
+    [\]] -> MStringChar
+    "[[" (~[\]] | MStringChar)* "]]" -> STRING
+
+    %% Whitespace
     [\ \t\n\r] -> LAYOUT
-    
-    [\*]                             -> CommentChar
-    "/*" (~[\*] | CommentChar)* "*/" -> LAYOUT
-    "//" ~[\n\r]* ([\n\r] | EOF)     -> LAYOUT
-    
+
+    %% Simple multi line comment
+    [\]] -> CommentChar
+    "--[[" (~[\]] | CommentChar)* "]]" -> LAYOUT
+
+    %% Single line comment
+    "--" ~[\n\r]* ([\n\r] | EOF) -> LAYOUT
+
+    %% Optional first line comment
+    %% TODO: insert something which only matches at begin of file
+    "#" ~[\n\r]* ([\n\r] | EOF) -> FIRSTLINECOMMENT
+
     -> EOF
-  
+
   lexical restrictions
-  
+
     %% Ensure greedy matching for lexicals
-  
-    CommentChar   -/- [\/]
-    INT           -/- [0-9]
+
+    MStringChar   -/- [\]]
+    CommentChar   -/- [\]]
+    NUMBER        -/- [a-zA-Z0-9\_\.]
     ID            -/- [a-zA-Z0-9\_]
-    
+
     %% EOF may not be followed by any char
-    
+
     EOF           -/- ~[]
 
-    %% Backslash chars in strings may not be followed by " 
-    
-    BackSlashChar -/- [\"]
+    %% Follow restrictions for keywords 
+    %% http://www.lua.org/manual/5.1/manual.html#2.1
+    "and"    "break"  "do"   "else"     "elseif"
+    "end"    "false"  "for"  "function" "if"
+    "in"     "local"  "nil"  "not"      "or"
+    "repeat" "return" "then" "true"     "until"  "while" -/- [a-zA-Z0-9\_]
 
   context-free restrictions
-  
+
     %% Ensure greedy matching for comments
 
     LAYOUT? -/- [\ \t\n\r]
-    LAYOUT? -/- [\/].[\/]
-    LAYOUT? -/- [\/].[\*]
+    LAYOUT? -/- [\-].[\-]
