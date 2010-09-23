@@ -11,10 +11,30 @@ completions
 
 completions
                                          
-  // Syntax completion:                  
-  completion template                  : "module " <m> (blank)
-  completion template                  : "entity " <e> " {}" (blank)
-                                         
+  // Syntax completion:
+  // Yay, another clone of the list of keywords =)
+	completion keyword: "and"
+	completion keyword: "break"
+	completion keyword: "do"
+	completion keyword: "else"
+	completion keyword: "elseif"
+	completion keyword: "end"
+	completion keyword: "false"
+	completion keyword: "for"
+	completion keyword: "function"
+	completion keyword: "if"
+	completion keyword: "in"
+	completion keyword: "local"
+	completion keyword: "nil"
+	completion keyword: "not"
+	completion keyword: "or"
+	completion keyword: "repeat"
+	completion keyword: "return"
+	completion keyword: "then"
+	completion keyword: "true"
+	completion keyword: "until"
+	completion keyword: "while"
+
   // Semantic (identifier) completion:   
   completion proposer                  : editor-complete
   completion trigger                   : ":"
