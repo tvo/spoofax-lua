@@ -142,16 +142,13 @@ exports
     "{" FieldList? "}" -> TableCons {cons("TableConstructor")}
 
 %% fieldlist ::= field {fieldsep field} [fieldsep]
-    Field (FieldSep Field)* FieldSep? -> FieldList {cons("FieldList")}
+%% fieldsep ::= `,´ | `;´
+    {Field [\,\;]}+ [\,\;]? -> FieldList {cons("FieldList")}
 
 %% field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
     "[" Exp "]" "=" Exp -> Field {cons("CalculatedField")}
     ID "=" Exp          -> Field {cons("KeyValueField")}
     Exp                 -> Field {cons("ArrayField")}
-
-%% fieldsep ::= `,´ | `;´
-    "," -> FieldSep {cons("FieldSep")}
-    ";" -> FieldSep {cons("FieldSep")}
 
   context-free priorities
 
