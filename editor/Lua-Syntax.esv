@@ -6,4 +6,7 @@ language
                                                                    
   // This file can be used for custom syntax rules.                
   //                                                               
-  // See the imported file for a brief introduction and examples.  
+  // See the imported file for a brief introduction and examples.
+
+  line comment                           : "--"
+  block comment                          : "--[[" * "]]"
