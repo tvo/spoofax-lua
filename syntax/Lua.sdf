@@ -15,27 +15,29 @@ exports
   context-free syntax
 
 %% chunk ::= {stat [`;´]} [laststat [`;´]]
-    (Stat ";"?)* (LastStat ";"?)? -> Chunk {cons("Chunk")}
+    Stat2*   -> Chunk {cons("Chunk")}
+    Stat ";" -> Stat2 {bracket}
+    Stat     -> Stat2
 
 %% block ::= chunk
     Chunk -> Block
 
 %% Helper for `for' loops, `while' loop, and `do..end' block. 
-    "do" Block "end" -> DoBlock {cons("Block")}
+    "do" Block "end" -> DoBlock {bracket}
 
 %% stat ::= varlist `=´ explist | 
     VarList "=" ExpList -> Stat {cons("Assignment")}
 %%      functioncall | 
     FunctionCall        -> Stat
 %%      do block end | 
-    DoBlock             -> Stat
+    DoBlock             -> Stat {cons("Block")}
 %%      while exp do block end | 
     "while" Exp DoBlock -> Stat {cons("WhileLoop")}
 %%      repeat block until exp | 
     "repeat" Block "until" Exp -> Stat {cons("RepeatLoop")}
 %%      for Name `=´ exp `,´ exp [`,´ exp] do block end | 
-    "for" ID "=" Exp "," Exp Step? DoBlock -> Stat {cons("ForLoop")}
-    "," Exp -> Step {cons("Step")}
+    "for" ID "=" Exp "," Exp "," Exp DoBlock -> Stat {cons("ForLoop")}
+    "for" ID "=" Exp "," Exp DoBlock         -> Stat {cons("ForLoop")}
 %%      for namelist in explist do block end | 
     "for" NameList "in" ExpList DoBlock -> Stat {cons("ForEachLoop")}    
 %%      function funcname funcbody |
@@ -43,10 +45,10 @@ exports
 %%      local function Name funcbody |
     "local" "function" FuncName FuncBody -> Stat {cons("LocalFunctionDecl")} 
 %%      local namelist [`=´ explist]
-    "local" NameList Initializer? -> Stat {cons("LocalVariableDecl")}
-    "=" ExpList -> Initializer {cons("Initializer")}
+    "local" NameList             -> Stat {cons("LocalVariableDecl")}
+    "local" NameList "=" ExpList -> Stat {cons("LocalVariableDecl")}
 
-%%      if exp then block {elseif exp then block} [else block] end | 
+%%      if exp then block {elseif exp then block} [else block] end |
     If ElseIf* Else? "end"    -> Stat {cons("Branch")}
     "if" Exp "then" Block     -> If {cons("If")}
     "elseif" Exp "then" Block -> ElseIf {cons("ElseIf")} 
@@ -57,11 +59,11 @@ exports
     ":" ID -> MethodPart {cons("Method")}
 
 %% laststat ::= return [explist] | break
-    "return" ExpList? -> LastStat {cons("Return")}
-    "break" -> LastStat {cons("Break")}
+    "return" ExpList? -> Stat {cons("Return")}
+    "break"           -> Stat {cons("Break")}
 
 %% varlist ::= var {`,´ var}
-    {Var ","}+ -> VarList {cons("VarList")}
+    {Var ","}+ -> VarList {ast("<1>")}
 
 %% var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
 %% Note: prefixexp is any expression that can act as LHS in assignment
@@ -70,10 +72,10 @@ exports
     PrefixExp "." ID      -> Var {cons("DirectTableAccess")}
 
 %% namelist ::= Name {`,´ Name}
-    {ID ","}+ -> NameList {cons("NameList")}
+    {ID ","}+ -> NameList {ast("<1>")}
 
 %% explist ::= {exp `,´} exp
-    {Exp ","}+ -> ExpList {cons("ExpList")}
+    {Exp ","}+ -> ExpList {ast("<1>")}
 
 %% exp ::= nil | false | true | Number | String | `...´ | function | 
 %%         prefixexp | tableconstructor | exp binop exp | unop exp 
@@ -85,7 +87,7 @@ exports
     RAWSTRING     -> Exp {cons("RawString")}
     "..."         -> Exp {cons("VarArgs")}
     Function      -> Exp
-    PrefixExp T   -> Exp {cons("PrefixExp")}
+    PrefixExp T   -> Exp {ast("<1>")}
                   -> T   {cons("Bogus")}
     TableCons     -> Exp
 
@@ -122,26 +124,31 @@ exports
     PrefixExp ":" ID Args -> FunctionCall {cons("MethodCall")}
 
 %% args ::=  `(´ [explist] `)´ | tableconstructor | String
-    "(" ExpList? ")" -> Args {cons("Args")}
-     TableCons       -> Args {cons("TableArg")}
-     STRING          -> Args {cons("StringArg")}
+    "(" ExpList ")"  -> Args {bracket}
+    "(" ")"          -> Args {ast("[]")}
+     TableCons       -> Args
+     STRING          -> Args {cons("String")}
+     RAWSTRING       -> Args {cons("RawString")}
 
 %% function ::= function funcbody
     "function" FuncBody -> Function {cons("Function")}
 
 %% funcbody ::= `(´ [parlist] `)´ block end
-    "(" ParList? ")" Block "end" -> FuncBody {cons("FunctionBody")}
+    "(" ParList ")" Block "end" -> FuncBody {cons("FunctionBody")}
 
 %% parlist ::= namelist [`,´ `...´] | `...´
-    NameList ("," "...")? -> ParList {cons("ParList")}
-    "..."                 -> ParList {cons("ParList")}
+                       -> ParList {ast("[]")}
+    NameList           -> ParList
+    NameList "," "..." -> ParList {cons("VarPars")}
+    "..."              -> ParList {cons("VarPars")}
 
 %% tableconstructor ::= `{´ [fieldlist] `}´
-    "{" FieldList? "}" -> TableCons {cons("TableConstructor")}
+    "{" "}"           -> TableCons {cons("TableConstructor")}
+    "{" FieldList "}" -> TableCons {cons("TableConstructor")}
 
 %% fieldlist ::= field {fieldsep field} [fieldsep]
 %% fieldsep ::= `,´ | `;´
-    {Field [\,\;]}+ [\,\;]? -> FieldList {cons("FieldList")}
+    {Field [\,\;]}+ [\,\;]? -> FieldList {ast("<1>")}
 
 %% field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
     "[" Exp "]" "=" Exp -> Field {cons("CalculatedField")}
