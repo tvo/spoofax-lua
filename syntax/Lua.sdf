@@ -117,7 +117,7 @@ exports
 %% prefixexp ::= var | functioncall | `(´ exp `)´
     Var -> PrefixExp
     FunctionCall -> PrefixExp
-    "(" Exp ")" -> PrefixExp {cons("Parens")}
+    "(" Exp ")" -> PrefixExp {bracket}
 
 %% functioncall ::=  prefixexp args | prefixexp `:´ Name args
     PrefixExp Args        -> FunctionCall {cons("FunctionCall")}
