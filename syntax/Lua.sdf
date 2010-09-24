@@ -85,6 +85,7 @@ exports
     "true"        -> Exp {cons("True")}
     NUMBER        -> Exp {cons("Number")}
     STRING        -> Exp {cons("String")}
+    RAWSTRING     -> Exp {cons("RawString")}
     "..."         -> Exp {cons("VarArgs")}
     Function      -> Exp
     PrefixExp T   -> Exp {cons("PrefixExp")}

@@ -7,3 +7,10 @@ folding
   // This file can be used for custom folding rules.
   //
   // See the imported file for a brief introduction and examples.
+
+  Stat.FunctionDecl
+  Stat.LocalFunctionDecl
+  TableCons.TableConstructor
+
+  // TODO: folding of multi line / raw strings: _.RawString (doesn't work)
+  // TODO: folding of block comments: BLOCKCOMMENT._ (sort not recognized)

@@ -34,14 +34,15 @@ exports
 
     %% Multiline/raw string (no escapes)
     [\]] -> MStringChar
-    "[[" (~[\]] | MStringChar)* "]]" -> STRING
+    "[[" (~[\]] | MStringChar)* "]]" -> RAWSTRING
 
     %% Whitespace
     [\ \t\n\r] -> LAYOUT
 
     %% Simple multi line comment
     [\]] -> CommentChar
-    "--[[" (~[\]] | CommentChar)* "]]" -> LAYOUT
+    "--[[" (~[\]] | CommentChar)* "]]" -> BLOCKCOMMENT
+    BLOCKCOMMENT -> LAYOUT
 
     %% Single line comment
     "--" ~[\n\r]* ([\n\r] | EOF) -> LAYOUT
