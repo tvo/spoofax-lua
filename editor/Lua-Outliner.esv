@@ -7,3 +7,12 @@ outliner
   // This file can be used for custom outliner rules.
   //
   // See the imported file for a brief introduction and examples.
+
+  Stat.FunctionDecl
+  Stat.LocalFunctionDecl
+
+  // Alternative:
+  // FuncName.FunctionName
+  // (selects only the function name when clicking on it in the outline view)
+
+  // TODO: select which string will end up in the outline view
