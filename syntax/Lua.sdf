@@ -4,15 +4,13 @@ imports Common
 
 exports
 
-  %% TODO: change to lexical start-symbols after this issue has been resolved:
-  %%       http://yellowgrass.org/issue/Spoofax/257
-  context-free start-symbols
+  start-symbols
 
     Start
 
   syntax
 
-    <FIRSTLINECOMMENT?-LEX> <LAYOUT?-CF> <Chunk-CF> <LAYOUT?-CF> -> <Start-CF> {cons("File")}
+    <FIRSTLINECOMMENT?-LEX> <LAYOUT?-CF> <Chunk-CF> <LAYOUT?-CF> -> Start {cons("File")}
 
   context-free syntax
 
