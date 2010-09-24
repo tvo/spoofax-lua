@@ -153,10 +153,10 @@ exports
   context-free priorities
 
 %% http://www.lua.org/manual/5.1/manual.html#2.5.6
-    {right: Exp "^"   Exp -> Exp} <0> >
     {right: "not"     Exp -> Exp
             "#"       Exp -> Exp
-            "-"       Exp -> Exp} >
+            "-"       Exp -> Exp
+            Exp "^"   Exp -> Exp} >
     {left:  Exp "*"   Exp -> Exp
             Exp "/"   Exp -> Exp
             Exp "%"   Exp -> Exp} >
