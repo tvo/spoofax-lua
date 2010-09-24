@@ -15,9 +15,12 @@ exports
   context-free syntax
 
 %% chunk ::= {stat [`;´]} [laststat [`;´]]
-    Stat2*   -> Chunk {cons("Chunk")}
-    Stat ";" -> Stat2 {bracket}
-    Stat     -> Stat2
+    Stat2*           -> Chunk {cons("Chunk")}
+    Stat2* LastStat2 -> Chunk {cons("Chunk")}
+    Stat ";"         -> Stat2 {bracket}
+    Stat             -> Stat2
+    LastStat ";"     -> LastStat2 {bracket}
+    LastStat         -> LastStat2
 
 %% block ::= chunk
     Chunk -> Block
@@ -59,8 +62,8 @@ exports
     ":" ID -> MethodPart {cons("Method")}
 
 %% laststat ::= return [explist] | break
-    "return" ExpList? -> Stat {cons("Return")}
-    "break"           -> Stat {cons("Break")}
+    "return" ExpList? -> LastStat {cons("Return")}
+    "break"           -> LastStat {cons("Break")}
 
 %% varlist ::= var {`,´ var}
     {Var ","}+ -> VarList {ast("<1>")}
