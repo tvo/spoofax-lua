@@ -26,8 +26,7 @@ exports
     "do" Block "end" -> DoBlock {cons("Block")}
 
 %% stat ::= varlist `=´ explist | 
-    VarList "=" ExpList -> Assignment {cons("Assignment")}
-    Assignment -> Stat
+    VarList "=" ExpList -> Stat {cons("Assignment")}
 %%      functioncall | 
     FunctionCall        -> Stat
 %%      do block end | 
