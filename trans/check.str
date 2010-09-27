@@ -23,7 +23,21 @@ rules
         GetEntity :+ x -> x
       )
 rules
-    
+
+  constraint-error:
+    Chunk(x) -> (break, $[Break must be the last statement in the block])
+    where
+      break := <fetch-elem(?Break())> x;
+      last-stat := <last> x;
+      not(<equal>(last-stat, break))
+
+  constraint-error:
+    Chunk(x) -> (return, $[Return must be the last statement in the block])
+    where
+      return := <fetch-elem(?Return(_))> x;
+      last-stat := <last> x;
+      not(<equal>(last-stat, return))
+
   // Reports an error if a property type is undefined.
   // This error is reported on the type name 'type'.
   constraint-error:
