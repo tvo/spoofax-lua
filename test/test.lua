@@ -19,8 +19,8 @@ if true then end
 if true then else end
 if true then elseif false then elseif false then end
 if true then elseif false then elseif false then else end
-break
-return
+do break end
+do return end
 x = y    --var
 x[1] = y --indirect table access
 x.y = z  --direct table access
