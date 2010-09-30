@@ -19,27 +19,21 @@ exports
     Stat ";" -> Stat2 {bracket}
     Stat     -> Stat2
 
-%% block ::= chunk
-    Chunk -> Block
-
-%% Helper for `for' loops, `while' loop, and `do..end' block. 
-    "do" Block "end" -> DoBlock {bracket}
-
 %% stat ::= varlist `=´ explist | 
     VarList "=" ExpList -> Stat {cons("Assignment")}
 %%      functioncall | 
     FunctionCall        -> Stat
 %%      do block end | 
-    DoBlock             -> Stat {cons("Block")}
+    "do" Chunk "end"    -> Stat {cons("Chunk")}
 %%      while exp do block end | 
-    "while" Exp DoBlock -> Stat {cons("WhileLoop")}
+    "while" Exp "do" Chunk "end" -> Stat {cons("WhileLoop")}
 %%      repeat block until exp | 
-    "repeat" Block "until" Exp -> Stat {cons("RepeatLoop")}
+    "repeat" Chunk "until" Exp -> Stat {cons("RepeatLoop")}
 %%      for Name `=´ exp `,´ exp [`,´ exp] do block end | 
-    "for" ID "=" Exp "," Exp "," Exp DoBlock -> Stat {cons("ForLoop")}
-    "for" ID "=" Exp "," Exp DoBlock         -> Stat {cons("ForLoop")}
+    "for" ID "=" Exp "," Exp "," Exp "do" Chunk "end" -> Stat {cons("ForLoop")}
+    "for" ID "=" Exp "," Exp "do" Chunk "end"         -> Stat {cons("ForLoop")}
 %%      for namelist in explist do block end | 
-    "for" NameList "in" ExpList DoBlock -> Stat {cons("ForEachLoop")}    
+    "for" NameList "in" ExpList "do" Chunk "end" -> Stat {cons("ForEachLoop")}    
 %%      function funcname funcbody |
     "function" FuncName FuncBody -> Stat {cons("FunctionDecl")} 
 %%      local function Name funcbody |
@@ -50,9 +44,9 @@ exports
 
 %%      if exp then block {elseif exp then block} [else block] end |
     If ElseIf* Else? "end"    -> Stat {cons("Branch")}
-    "if" Exp "then" Block     -> If {cons("If")}
-    "elseif" Exp "then" Block -> ElseIf {cons("ElseIf")} 
-    "else" Block              -> Else {cons("Else")}
+    "if" Exp "then" Chunk     -> If {cons("If")}
+    "elseif" Exp "then" Chunk -> ElseIf {cons("ElseIf")} 
+    "else" Chunk              -> Else {cons("Else")}
 
 %% funcname ::= Name {`.´ Name} [`:´ Name]
     {ID "."}+ MethodPart? -> FuncName {cons("FunctionName")}
@@ -134,7 +128,7 @@ exports
     "function" FuncBody -> Function {cons("Function")}
 
 %% funcbody ::= `(´ [parlist] `)´ block end
-    "(" ParList ")" Block "end" -> FuncBody {cons("FunctionBody")}
+    "(" ParList ")" Chunk "end" -> FuncBody {cons("FunctionBody")}
 
 %% parlist ::= namelist [`,´ `...´] | `...´
                        -> ParList {ast("[]")}
