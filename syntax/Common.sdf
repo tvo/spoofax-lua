@@ -48,7 +48,6 @@ exports
     "--" ~[\n\r]* ([\n\r] | EOF) -> LAYOUT
 
     %% Optional first line comment
-    %% TODO: insert something which only matches at begin of file
     "#" ~[\n\r]* ([\n\r] | EOF) -> FIRSTLINECOMMENT
 
     -> EOF
