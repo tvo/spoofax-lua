@@ -1,0 +1,19 @@
+module desugar
+
+imports
+  include/Lua
+
+strategies
+
+  desugar-top = innermost(desugar)
+
+  // always include optional step size with `for' loops
+  desugar:
+    ForLoop(a, b, c, d) -> ForLoop(a, b, c, Number("1"), d)
+
+  // wrap loops to make the extra scope explicit
+  // FIXME these trigger stackoverflows because they can be applied repeatedly
+  /*desugar:
+  	f@ForLoop(_, _, _, _, _) -> Chunk([f])
+  desugar:
+  	f@ForEachLoop(_, _, _) -> Chunk([f])*/

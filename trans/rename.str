@@ -1,0 +1,44 @@
+module rename
+
+imports
+  include/Lua
+
+strategies
+
+  // Based on code snippets in `The Spoofax Language Workbench (DRAFT)'
+  // by Lennart C. L. Kats and Eelco Visser.
+
+  rename-top = rename-scope(rename-top')
+
+  rename-top' = alltd(rename)
+
+  rename-scope(s) = {|RenameId: s|}
+  rename-scope = rename-scope(all(rename-top'))
+
+  // Variable declaration
+  rename: d@Name(x) -> Name(y)
+    where
+      y := x{<new>};
+      rules(
+        VarDef   : y -> d 
+        RenameId : x -> y
+      )
+
+  // Variable use
+  rename: Var(x) -> Var(y)
+    where
+      y := <RenameId> x
+
+  // Scopes
+  rename: x@Chunk(_) -> <rename-scope> x
+  rename: x@ForLoop(_, _, _, _, _) -> <rename-scope> x
+  rename: x@ForEachLoop(_, _, _) -> <rename-scope> x
+
+  // Special handling for `repeat ... until exp' loops because
+  // the scope of the body includes the loop condition exp.
+  rename: RepeatLoop(Chunk(x), exp) -> RepeatLoop(Chunk(y), exp')
+    where
+      {|RenameId:
+        y    := <rename-top'> x;
+        exp' := <rename-top'> exp
+      |}

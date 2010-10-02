@@ -7,7 +7,9 @@ imports
   include/Lua
   lib/editor-common.generated
   check
+  desugar
   generate
+  rename
 
 rules // Main editor interface (defined by editor/Lua-Builders and -References.esv)
   
@@ -41,9 +43,13 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   editor-resolve:
     (node, position, ast, path, project-path) -> target
     where
-      <debug(!"Resolve: ")> node; 
-      Type(type) := node; 
-      target     := <GetEntity> type
+      <debug(!"Resolve: ")> (node, position);
+      pos' := <desugar-position(desugar|ast)> position;
+      ast' := <DecoratedAst> ast;
+      target := <decl-of> (<term-at-position(|pos')> ast')
+
+  decl-of:
+    Var(x) -> <VarDef> x
 
   // Returns "hover help" information for a particular node in the editor.
   // For references, this rule is invoked using the resolved term.

@@ -4,15 +4,22 @@ imports
   libstratego-lib
   include/Lua
   lib/editor-common.generated
+  desugar
+  rename
 
 rules
 
   // Analysis: does a topdown traversal of the tree,
   // and tries to apply the record-entity rule.
   analyze:
-    t -> t
+    t@(ast, path, project-path) -> t
     with
-      <topdown(try(record-entity))> t
+      !ast;
+      desugar-top;
+      rename-top;
+      rules(
+        DecoratedAst := <id>
+      )
 
   // Records the definition of an entity in a dynamic rule GetEntity.
   record-entity:
