@@ -5,6 +5,7 @@ imports
   include/Lua
   lib/editor-common.generated
   desugar
+  globals
   rename
 
 rules
@@ -17,6 +18,7 @@ rules
       !ast;
       desugar-top;
       rename-top;
+      globals-top;
       rules(
         DecoratedAst := <id>
       )

@@ -1,0 +1,20 @@
+module globals
+
+imports
+  include/Lua
+  rename
+
+strategies
+
+  globals-top = topdown(try(globals))
+
+  globals:
+    a@Assignment(vars, _) -> a
+    where
+      <map(try(
+        ?d@Var(x);
+        not(<GlobalVar> x);
+        rules(
+          GlobalVar : x -> d
+        )
+      ))> vars

@@ -9,6 +9,7 @@ imports
   check
   desugar
   generate
+  globals
   rename
 
 rules // Main editor interface (defined by editor/Lua-Builders and -References.esv)
@@ -49,7 +50,7 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
       target := <decl-of> (<term-at-position(|pos')> ast')
 
   decl-of:
-    Var(x) -> <VarDef> x
+    Var(x) -> <VarDef <+ GlobalVar> x
 
   // Returns "hover help" information for a particular node in the editor.
   // For references, this rule is invoked using the resolved term.
