@@ -36,7 +36,8 @@ strategies
 
   // `function x.y.z()...end' is sugar for `x.y.z = function()...end' 
   desugar:
-    FunctionDecl(FunctionName(path), fun) -> Assignment([path'], [fun])
+    FunctionDecl(FunctionName(path), fun){a*} ->
+      Assignment([path'], [fun]){a*}
     where
       // FIXME I bet there is a strategy to do this in the library
       let cp = rec x(([y] -> Var(y)) <+ !DirectTableAccess(<init; x>, <last>)) in
@@ -45,10 +46,10 @@ strategies
 
   // `local function x()...end' is sugar for `local x; x = function()...end'
   desugar:
-    LocalFunctionDecl(name, fun) -> 
+    LocalFunctionDecl(name, fun){a*} -> 
       [
         LocalVariableDecl([Name(name)]),
-        Assignment([Var(name)], [fun])
+        Assignment([Var(name)], [fun]){a*}
       ]
 
   desugar:
