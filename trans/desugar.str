@@ -7,6 +7,11 @@ strategies
 
   desugar-top = innermost(desugar)
 
+  desugar:
+    Chunk(s, ls) -> Chunk(t)
+    where
+      t := <conc> (s, [ls])
+
   // always include optional step size with `for' loops
   desugar:
     ForLoop(a, b, c, d) -> ForLoop(a, b, c, Number("1"), d)
