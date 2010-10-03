@@ -44,7 +44,7 @@ exports
 %%      function funcname funcbody |
     "function" FuncName FuncBody -> Stat {cons("FunctionDecl")} 
 %%      local function Name funcbody |
-    "local" "function" FuncName FuncBody -> Stat {cons("LocalFunctionDecl")} 
+    "local" "function" ID FuncBody -> Stat {cons("LocalFunctionDecl")} 
 %%      local namelist [`=´ explist]
     "local" NameList             -> Stat {cons("LocalVariableDecl")}
     "local" NameList "=" ExpList -> Stat {cons("LocalVariableDecl")}
