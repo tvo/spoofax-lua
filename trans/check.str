@@ -13,14 +13,13 @@ rules
   // Analysis: does a topdown traversal of the tree,
   // and tries to apply the record-entity rule.
   analyze:
-    t@(ast, path, project-path) -> t
+    (ast, path, project-path) -> (ast', path, project-path)
     with
-      !ast;
-      desugar-top;
-      rename-top;
-      globals-top;
+      ast' := <desugar-top;
+               rename-top;
+               globals-top> ast;
       rules(
-        DecoratedAst := <id>
+        DecoratedAst := ast'
       )
 
   // Records the definition of an entity in a dynamic rule GetEntity.

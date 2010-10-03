@@ -57,8 +57,9 @@ exports
     ":" ID -> MethodPart {cons("Method")}
 
 %% laststat ::= return [explist] | break
-    "return" ExpList? -> LastStat {cons("Return")}
-    "break"           -> LastStat {cons("Break")}
+    "return" ExpList -> LastStat {cons("Return")}
+    "return"         -> LastStat {cons("Return")}
+    "break"          -> LastStat {cons("Break")}
 
 %% varlist ::= var {`,´ var}
     {Var ","}+ -> VarList {ast("<1>")}
