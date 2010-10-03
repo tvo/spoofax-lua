@@ -40,14 +40,22 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
       filename := <guarantee-extension(|"aterm")> path;
       result   := selected // we just return the input term
 
+  generate-decorated-ast:
+    (selected, position, ast, path, project-path) -> (filename, result)
+    with
+      filename := <guarantee-extension(|"aterm")> path;
+      pos' := <desugar-position(desugar|ast)> position;
+      ast' := <DecoratedAst>;
+      result := <term-at-position(|pos')> ast'
+
   // Resolves a reference when the user control-clicks or presses F3 in the editor.
   // Only succeeds for nodes of the form Type(_) for which GetEntity is defined.
   editor-resolve:
     (node, position, ast, path, project-path) -> target
     where
-      <debug(!"Resolve: ")> (node, position);
+      <debug(!"Resolve: ")> node;
       pos' := <desugar-position(desugar|ast)> position;
-      ast' := <DecoratedAst> ast;
+      ast' := <DecoratedAst>;
       target := <decl-of> (<term-at-position(|pos')> ast')
 
   decl-of:
