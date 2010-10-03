@@ -14,6 +14,9 @@ exports
 
   context-free syntax
 
+%% helps content completion
+    Var -> Stat2 {recover}
+
 %% chunk ::= {stat [`;´]} [laststat [`;´]]
     Stat2*           -> Chunk {cons("Chunk")}
     Stat2* LastStat2 -> Chunk {cons("Chunk")}

@@ -69,10 +69,9 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   // Completes an identifier when the user presses control-space
   // (the completion identifier in the AST provides additional context information)
   editor-complete:
-    (node, position, ast, path, project-path) ->
-    ["String", "Int" | proposals]
+    (node, position, ast, path, project-path) -> proposals
     where
       <debug(!"Complete: ")> node;
-      if !node => Type(COMPLETION(prefix)) then
-        proposals := <all-keys-GetEntity>
+      if !node => Var(COMPLETION(prefix)) then
+        proposals := <all-keys-VarDef>
       end
