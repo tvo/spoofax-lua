@@ -5,7 +5,7 @@ imports
 
 strategies
 
-  desugar-top = innermost(desugar)
+  desugar-top = topdown(repeat(desugar))
 
   desugar:
     Chunk(s, ls) -> Chunk(t)
