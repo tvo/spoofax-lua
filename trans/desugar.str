@@ -5,7 +5,12 @@ imports
 
 strategies
 
-  desugar-top = topdown(repeat(desugar))
+  desugar-top = innermost(desugar)
+
+  desugar-top':
+    x@File(_, _) -> y
+    where
+      y := <innermost(desugar)> x
 
   desugar:
     Chunk(s, ls) -> Chunk(t)
