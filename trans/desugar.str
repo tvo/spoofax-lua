@@ -18,3 +18,42 @@ strategies
 
   desugar:
     Return() -> Return([])
+
+  // `x:z()' is sugar for `x.z(x)'
+  desugar:
+    MethodCall(path, name, args) -> FunctionCall(path', args')
+    where
+      path' := DirectTableAccess(path, name);
+      args' := <conc> ([path], args)
+
+  // `function x:z()...end' is sugar for `function x.z(self)...end'
+  desugar:
+    FunctionDecl(MethodName(path, name), Function(args, body)) ->
+      FunctionDecl(FunctionName(path'), Function(args', body))
+    where
+      path' := <conc> (path, [name]);
+      args' := <conc> ([Name("self")], args)
+
+  // `function x.y.z()...end' is sugar for `x.y.z = function()...end' 
+  desugar:
+    FunctionDecl(FunctionName(path), fun) -> Assignment([path'], [fun])
+    where
+      // FIXME I bet there is a strategy to do this in the library
+      let cp = rec x(([y] -> Var(y)) <+ !DirectTableAccess(<init; x>, <last>)) in
+        path' := <cp> path
+      end
+
+  // `local function x()...end' is sugar for `local x; x = function()...end'
+  desugar:
+    // more than one element in FunctionName is an error
+    LocalFunctionDecl(FunctionName([name]), fun) -> 
+      [
+        LocalVariableDecl([Name(name)]),
+        Assignment([Var(name)], [fun])
+      ]
+
+  desugar:
+    Chunk(s) -> Chunk(t)
+    where
+      t := <flatten-list> s;
+      not(<equal> (s, t))    // prevent infinite application of rule

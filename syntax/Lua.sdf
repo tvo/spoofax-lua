@@ -56,8 +56,8 @@ exports
     "else" Chunk              -> Else {cons("Else")}
 
 %% funcname ::= Name {`.´ Name} [`:´ Name]
-    {ID "."}+ MethodPart? -> FuncName {cons("FunctionName")}
-    ":" ID -> MethodPart {cons("Method")}
+    {ID "."}+ ":" ID -> FuncName {cons("MethodName")}
+    {ID "."}+        -> FuncName {cons("FunctionName")}
 
 %% laststat ::= return [explist] | break
     "return" ExpList -> LastStat {cons("Return")}
@@ -134,10 +134,10 @@ exports
      RAWSTRING       -> Args {cons("RawString")}
 
 %% function ::= function funcbody
-    "function" FuncBody -> Function {cons("Function")}
+    "function" FuncBody -> Function {bracket}
 
 %% funcbody ::= `(´ [parlist] `)´ block end
-    "(" ParList ")" Chunk "end" -> FuncBody {cons("FunctionBody")}
+    "(" ParList ")" Chunk "end" -> FuncBody {cons("Function")}
 
 %% parlist ::= namelist [`,´ `...´] | `...´
                        -> ParList {ast("[]")}
