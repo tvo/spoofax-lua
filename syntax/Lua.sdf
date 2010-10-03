@@ -93,7 +93,7 @@ exports
 %%    "+" | "-" | "*" | "/" | "^" | "%" | ".." | "<" |
 %%    "<=" | ">" | ">=" | "==" | "~=" | "and" | "or" -> BINOP
     Exp "+"   Exp -> Exp {cons("Plus"), left}
-    Exp "-"   Exp -> Exp {cons("Minus"), left}
+    Exp MINUS Exp -> Exp {cons("Minus"), left}
     Exp "*"   Exp -> Exp {cons("Times"), left}
     Exp "/"   Exp -> Exp {cons("Divide"), left}
     Exp "^"   Exp -> Exp {cons("Power"), right}
@@ -109,7 +109,7 @@ exports
     Exp "or"  Exp -> Exp {cons("Or"), left}
  
  %%    "-" | "not" | "#" -> UNOP
-    "-"   Exp -> Exp {cons("Negative")}
+    MINUS Exp -> Exp {cons("Negative")}
     "not" Exp -> Exp {cons("Not")}
     "#"   Exp -> Exp {cons("Length")}
 
@@ -159,13 +159,13 @@ exports
 %% http://www.lua.org/manual/5.1/manual.html#2.5.6
     {right: "not"     Exp -> Exp
             "#"       Exp -> Exp
-            "-"       Exp -> Exp
+            MINUS     Exp -> Exp
             Exp "^"   Exp -> Exp} >
     {left:  Exp "*"   Exp -> Exp
             Exp "/"   Exp -> Exp
             Exp "%"   Exp -> Exp} >
     {left:  Exp "+"   Exp -> Exp
-            Exp "-"   Exp -> Exp} >
+            Exp MINUS Exp -> Exp} >
     {right: Exp ".."  Exp -> Exp} >
     {left:  Exp "<"   Exp -> Exp
             Exp ">"   Exp -> Exp
