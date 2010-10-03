@@ -33,6 +33,7 @@ strategies
   rename: x@Chunk(_) -> <rename-scope> x
   rename: x@ForLoop(_, _, _, _, _) -> <rename-scope> x
   rename: x@ForEachLoop(_, _, _) -> <rename-scope> x
+  rename: x@FunctionBody(_, _) -> <rename-scope> x
 
   // Special handling for `repeat ... until exp' loops because
   // the scope of the body includes the loop condition exp.
