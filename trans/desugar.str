@@ -50,15 +50,30 @@ strategies
       end
 
   // `local function x()...end' is sugar for `local x; x = function()...end'
+/*
   desugar:
     LocalFunctionDecl(name, fun){a*} -> 
       [
         LocalVariableDecl([Name(name)]),
         Assignment([Var(name)], [fun]){a*}
       ]
+*/
+  desugar:
+    |[ local function ~name(~args) ~*body end ]| ->
+    *|[ local ~name ; ~name = function(~args) ~*body end ]|
 
+/*
   desugar:
     Chunk(s) -> Chunk(t)
     where
       t := <flatten-list> s;
       not(<equal> (s, t))    // prevent infinite application of rule
+*/
+
+/*
+  desugar:
+    |[ ~*s ]| -> |[ ~*t ]|
+    where
+      t := <flatten-list> s;
+      not(<equal> (s, t))    // prevent infinite application of rule
+*/
