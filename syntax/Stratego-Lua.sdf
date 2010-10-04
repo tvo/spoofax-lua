@@ -1,0 +1,27 @@
+%% https://mailman.st.ewi.tudelft.nl/pipermail/users/2010-June/000193.html
+
+module Stratego-Lua
+
+imports
+  StrategoMix[StrategoHost]
+  Lua
+
+exports
+  context-free start-symbols Module[[StrategoHost]]
+
+  context-free syntax
+    "|[" Stat2 "]|" -> Term[[StrategoHost]]   {cons("ToTerm"),prefer}
+    "*|[" Stat2* "]|" -> Term[[StrategoHost]] {cons("ToTerm"),prefer}
+    %%"~" Term[[StrategoHost]] -> PrefixExp    {cons("FromTerm"),prefer}
+    %%"~" Term[[StrategoHost]] -> Name         {cons("FromTerm"),prefer}
+    "~*" Term[[StrategoHost]] -> Stat2*     {cons("FromTerm"),prefer}
+    "~"  Term[[StrategoHost]] -> Stat2      {cons("FromTerm"),prefer}
+    "~"  Term[[StrategoHost]] -> ParList    {cons("FromTerm"),prefer}
+    "~"  Term[[StrategoHost]] -> ID         {cons("FromTerm"),prefer}
+
+  variables
+    %% "fun"[0-9]*     -> FuncBody {prefer}
+    %% "exp"[0-9]*     -> Exp {prefer}
+    %% "stat"[0-9]*    -> Stat2 {prefer}
+    %% "stat"[0-9]*"*" -> Stat2* {prefer}
+    %% "id"[0-9]*      -> ID {prefer}
