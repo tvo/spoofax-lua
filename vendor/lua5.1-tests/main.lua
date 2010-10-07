@@ -110,20 +110,20 @@ a = 2
 RUN([[lua "-e_PROMPT='%s'" -i < %s > %s]], prompt, prog, out)
 checkout(string.rep(prompt, 3).."\n")
 
-s = [[ -- 
+s = [=[ -- 
 function f ( x ) 
-  local a = [=[
+  local a = [[
 xuxu
-]=]
+]]
   local b = "\
 xuxu\n"
-  if x == 11 then return 1 , 2 end  --[=[ test multiple returns ]=]
+  if x == 11 then return 1 , 2 end  --[[ test multiple returns ]]
   return x + 1 
   --\\
 end
 =( f( 10 ) )
 assert( a == b )
-=f( 11 )  ]]
+=f( 11 )  ]=]
 s = string.gsub(s, ' ', '\n\n')
 prepfile(s)
 RUN([[lua -e"_PROMPT='' _PROMPT2=''" -i < %s > %s]], prog, out)

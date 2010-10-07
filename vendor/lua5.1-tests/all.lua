@@ -6,11 +6,11 @@ collectgarbage("setstepmul", 180)
 collectgarbage("setpause", 190)
 
 
---[[
+--[=[
   example of a long [comment],
-  [[spanning several [lines] ] ]
+  [[spanning several [lines]]]
 
-]]
+]=]
 
 print("current path:\n  " .. string.gsub(package.path, ";", "\n  "))
 
