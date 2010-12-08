@@ -1,185 +1,23 @@
 %% Grammar for the Lua language
 module Lua
-imports Common
+imports
+  Common
+  Expressions
+  Statements
+  Recovery
 
 exports
-
   start-symbols
-
     Start
 
   syntax
 
-    <FIRSTLINECOMMENT?-LEX> <LAYOUT?-CF> <Chunk-CF> <LAYOUT?-CF> -> Start {cons("File")}
+    <FIRSTLINECOMMENT?-LEX>
+    <LAYOUT?-CF>
+    <Chunk-CF>
+    <LAYOUT?-CF>            -> Start {cons("File")}
 
   context-free syntax
 
-%% helps content completion
-    Var -> Stat2 {recover}
-
-%% chunk ::= {stat [`;´]} [laststat [`;´]]
-    Stat2*           -> Chunk {cons("Chunk")}
-    Stat2* LastStat2 -> Chunk {cons("Chunk")}
-    Stat ";"         -> Stat2 {bracket}
-    Stat             -> Stat2
-    LastStat ";"     -> LastStat2 {bracket}
-    LastStat         -> LastStat2
-    LastStat         -> Stat {recover}
-
-%% stat ::= varlist `=´ explist | 
-    VarList "=" ExpList -> Stat {cons("Assignment")}
-%%      functioncall | 
-    FunctionCall        -> Stat
-%%      do block end | 
-    "do" Chunk "end"    -> Stat {cons("Chunk")}
-%%      while exp do block end | 
-    "while" Exp "do" Chunk "end" -> Stat {cons("WhileLoop")}
-%%      repeat block until exp | 
-    "repeat" Chunk "until" Exp -> Stat {cons("RepeatLoop")}
-%%      for Name `=´ exp `,´ exp [`,´ exp] do block end | 
-    "for" Name "=" Exp "," Exp "," Exp "do" Chunk "end" -> Stat {cons("ForLoop")}
-    "for" Name "=" Exp "," Exp "do" Chunk "end"         -> Stat {cons("ForLoop")}
-%%      for namelist in explist do block end | 
-    "for" NameList "in" ExpList "do" Chunk "end" -> Stat {cons("ForEachLoop")}    
-%%      function funcname funcbody |
-    "function" FuncName FuncBody -> Stat {cons("FunctionDecl")} 
-%%      local function Name funcbody |
-    "local" "function" ID FuncBody -> Stat {cons("LocalFunctionDecl")} 
-%%      local namelist [`=´ explist]
-    "local" NameList             -> Stat {cons("LocalVariableDecl")}
-    "local" NameList "=" ExpList -> Stat {cons("LocalVariableDecl")}
-
-%%      if exp then block {elseif exp then block} [else block] end |
-    If ElseIf* Else? "end"    -> Stat {cons("Branch")}
-    "if" Exp "then" Chunk     -> If {cons("If")}
-    "elseif" Exp "then" Chunk -> ElseIf {cons("ElseIf")} 
-    "else" Chunk              -> Else {cons("Else")}
-
-%% funcname ::= Name {`.´ Name} [`:´ Name]
-    {ID "."}+ ":" ID -> FuncName {cons("MethodName")}
-    {ID "."}+        -> FuncName {cons("FunctionName")}
-
-%% laststat ::= return [explist] | break
-    "return" ExpList -> LastStat {cons("Return")}
-    "return"         -> LastStat {cons("Return")}
-    "break"          -> LastStat {cons("Break")}
-
-%% varlist ::= var {`,´ var}
-    {Var ","}+ -> VarList {ast("<1>")}
-
-%% var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
-%% Note: prefixexp is any expression that can act as LHS in assignment
-    ID                    -> Var {cons("Var")}
-    PrefixExp "[" Exp "]" -> Var {cons("IndirectTableAccess")}
-    PrefixExp "." ID      -> Var {cons("DirectTableAccess")}
-
-%% namelist ::= Name {`,´ Name}
-    {Name ","}+ -> NameList {ast("<1>")}
-    ID -> Name {cons("Name")}
-
-%% explist ::= {exp `,´} exp
-    {Exp ","}+ -> ExpList {ast("<1>")}
-
-%% exp ::= nil | false | true | Number | String | `...´ | function | 
-%%         prefixexp | tableconstructor | exp binop exp | unop exp 
-    "nil"         -> Exp {cons("Nil")}
-    "false"       -> Exp {cons("False")}
-    "true"        -> Exp {cons("True")}
-    NUMBER        -> Exp {cons("Number")}
-    STRING        -> Exp {cons("String")}
-    RAWSTRING     -> Exp {cons("RawString")}
-    "..."         -> Exp {cons("VarArgs")}
-    Function      -> Exp
-    PrefixExp T   -> Exp {ast("<1>")}
-                  -> T   {cons("Bogus")}
-    TableCons     -> Exp
-
-%%    "+" | "-" | "*" | "/" | "^" | "%" | ".." | "<" |
-%%    "<=" | ">" | ">=" | "==" | "~=" | "and" | "or" -> BINOP
-    Exp "+"   Exp -> Exp {cons("Plus"), left}
-    Exp MINUS Exp -> Exp {cons("Minus"), left}
-    Exp "*"   Exp -> Exp {cons("Times"), left}
-    Exp "/"   Exp -> Exp {cons("Divide"), left}
-    Exp "^"   Exp -> Exp {cons("Power"), right}
-    Exp "%"   Exp -> Exp {cons("Modulo"), left}
-    Exp ".."  Exp -> Exp {cons("Concat"), right}
-    Exp "<"   Exp -> Exp {cons("LowerThan"), left}
-    Exp "<="  Exp -> Exp {cons("LowerThanOrEqual"), left}
-    Exp ">"   Exp -> Exp {cons("GreaterThan"), left}
-    Exp "<"   Exp -> Exp {cons("GreaterThanOrEqual"), left}
-    Exp "=="  Exp -> Exp {cons("Equal"), left}
-    Exp "~="  Exp -> Exp {cons("NotEqual"), left}
-    Exp "and" Exp -> Exp {cons("And"), left}
-    Exp "or"  Exp -> Exp {cons("Or"), left}
- 
- %%    "-" | "not" | "#" -> UNOP
-    MINUS Exp -> Exp {cons("Negative")}
-    "not" Exp -> Exp {cons("Not")}
-    "#"   Exp -> Exp {cons("Length")}
-
-%% prefixexp ::= var | functioncall | `(´ exp `)´
-    Var -> PrefixExp
-    FunctionCall -> PrefixExp
-    "(" Exp ")" -> PrefixExp {bracket}
-
-%% functioncall ::=  prefixexp args | prefixexp `:´ Name args
-    PrefixExp Args        -> FunctionCall {cons("FunctionCall")}
-    PrefixExp ":" ID Args -> FunctionCall {cons("MethodCall")}
-
-%% args ::=  `(´ [explist] `)´ | tableconstructor | String
-    "(" ExpList ")"  -> Args {bracket}
-    "(" ")"          -> Args {ast("[]")}
-     TableCons       -> Args
-     STRING          -> Args {cons("String")}
-     RAWSTRING       -> Args {cons("RawString")}
-
-%% function ::= function funcbody
-    "function" FuncBody -> Function {bracket}
-
-%% funcbody ::= `(´ [parlist] `)´ block end
-    "(" ParList ")" Chunk "end" -> FuncBody {cons("Function")}
-
-%% parlist ::= namelist [`,´ `...´] | `...´
-                       -> ParList {ast("[]")}
-    NameList           -> ParList
-    NameList "," "..." -> ParList {cons("VarPars")}
-    "..."              -> ParList {cons("VarPars")}
-
-%% tableconstructor ::= `{´ [fieldlist] `}´
-    "{" "}"           -> TableCons {cons("TableConstructor")}
-    "{" FieldList "}" -> TableCons {cons("TableConstructor")}
-
-%% fieldlist ::= field {fieldsep field} [fieldsep]
-%% fieldsep ::= `,´ | `;´
-    {Field [\,\;]}+ [\,\;]? -> FieldList {ast("<1>")}
-
-%% field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
-    "[" Exp "]" "=" Exp -> Field {cons("CalculatedField")}
-    ID "=" Exp          -> Field {cons("KeyValueField")}
-    Exp                 -> Field {cons("ArrayField")}
-
-  context-free priorities
-
-%% http://www.lua.org/manual/5.1/manual.html#2.5.6
-    {right: "not"     Exp -> Exp
-            "#"       Exp -> Exp
-            MINUS     Exp -> Exp
-            Exp "^"   Exp -> Exp} >
-    {left:  Exp "*"   Exp -> Exp
-            Exp "/"   Exp -> Exp
-            Exp "%"   Exp -> Exp} >
-    {left:  Exp "+"   Exp -> Exp
-            Exp MINUS Exp -> Exp} >
-    {right: Exp ".."  Exp -> Exp} >
-    {left:  Exp "<"   Exp -> Exp
-            Exp ">"   Exp -> Exp
-            Exp "<="  Exp -> Exp
-            Exp ">="  Exp -> Exp
-            Exp "~="  Exp -> Exp
-            Exp "=="  Exp -> Exp} >
-    {left:  Exp "and" Exp -> Exp} >
-    {left:  Exp "or"  Exp -> Exp}
-
-  context-free restrictions
-
-    T -/- [\(]
+%% exp ::= function
+    Function -> Exp

@@ -1,0 +1,72 @@
+module Statements
+imports
+  Expressions
+
+exports
+  context-free syntax
+
+%% chunk ::= {stat [`;´]} [laststat [`;´]]
+    Stat2*           -> Chunk {cons("Chunk")}
+    Stat2* LastStat2 -> Chunk {cons("Chunk")}
+    Stat ";"         -> Stat2 {bracket}
+    Stat             -> Stat2
+    LastStat ";"     -> LastStat2 {bracket}
+    LastStat         -> LastStat2
+
+%% stat ::= varlist `=´ explist
+    VarList "=" ExpList -> Stat {cons("Assignment")}
+%% stat ::= functioncall
+    FunctionCall        -> Stat
+%% stat ::= do block end
+    "do" Chunk "end"    -> Stat {cons("Chunk")}
+%% stat ::= while exp do block end
+    "while" Exp "do" Chunk "end" -> Stat {cons("WhileLoop")}
+%% stat ::= repeat block until exp
+    "repeat" Chunk "until" Exp -> Stat {cons("RepeatLoop")}
+%% stat ::= for Name `=´ exp `,´ exp [`,´ exp] do block end
+    "for" Name "=" Exp "," Exp "," Exp "do" Chunk "end" -> Stat {cons("ForLoop")}
+    "for" Name "=" Exp "," Exp "do" Chunk "end"         -> Stat {cons("ForLoop")}
+%% stat ::= for namelist in explist do block end
+    "for" NameList "in" ExpList "do" Chunk "end" -> Stat {cons("ForEachLoop")}
+%% stat ::= function funcname funcbody
+    "function" FuncName FuncBody -> Stat {cons("FunctionDecl")}
+%% stat ::= local function Name funcbody
+    "local" "function" ID FuncBody -> Stat {cons("LocalFunctionDecl")}
+
+%% stat ::=  local namelist [`=´ explist]
+    "local" NameList             -> Stat {cons("LocalVariableDecl")}
+    "local" NameList "=" ExpList -> Stat {cons("LocalVariableDecl")}
+
+%% stat ::= if exp then block {elseif exp then block} [else block] end
+    If ElseIf* Else? "end"    -> Stat {cons("Branch")}
+    "if" Exp "then" Chunk     -> If {cons("If")}
+    "elseif" Exp "then" Chunk -> ElseIf {cons("ElseIf")}
+    "else" Chunk              -> Else {cons("Else")}
+
+%% funcname ::= Name {`.´ Name} [`:´ Name]
+    {ID "."}+ ":" ID -> FuncName {cons("MethodName")}
+    {ID "."}+        -> FuncName {cons("FunctionName")}
+
+%% laststat ::= return [explist] | break
+    "return" ExpList -> LastStat {cons("Return")}
+    "return"         -> LastStat {cons("Return")}
+    "break"          -> LastStat {cons("Break")}
+
+%% function ::= function funcbody
+    "function" FuncBody -> Function {bracket}
+
+%% funcbody ::= `(´ [parlist] `)´ block end
+    "(" ParList ")" Chunk "end" -> FuncBody {cons("Function")}
+
+%% parlist ::= namelist [`,´ `...´] | `...´
+                       -> ParList {ast("[]")}
+    NameList           -> ParList
+    NameList "," "..." -> ParList {cons("VarPars")}
+    "..."              -> ParList {cons("VarPars")}
+
+%% varlist ::= var {`,´ var}
+    {Var ","}+ -> VarList {ast("<1>")}
+
+%% namelist ::= Name {`,´ Name}
+    {Name ","}+ -> NameList {ast("<1>")}
+    ID -> Name {cons("Name")}

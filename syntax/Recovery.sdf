@@ -1,0 +1,12 @@
+module Recovery
+imports
+  Statements
+
+exports
+  context-free syntax
+
+    %% Don't choke too badly on misplaced break/return statements
+    LastStat -> Stat {recover}
+
+    %% Helps content completion
+    Var -> Stat2 {recover}

@@ -1,0 +1,108 @@
+module Expressions
+imports
+  Common
+
+exports
+  context-free syntax
+
+%% explist ::= {exp `,´} exp
+    {Exp ","}+ -> ExpList {ast("<1>")}
+
+%% exp ::= nil | false | true | Number | String | `...´ |
+%%         prefixexp | tableconstructor
+    "nil"         -> Exp {cons("Nil")}
+    "false"       -> Exp {cons("False")}
+    "true"        -> Exp {cons("True")}
+    NUMBER        -> Exp {cons("Number")}
+    STRING        -> Exp {cons("String")}
+    RAWSTRING     -> Exp {cons("RawString")}
+    "..."         -> Exp {cons("VarArgs")}
+    PrefixExp T   -> Exp {ast("<1>")}
+                  -> T   {cons("Bogus")}
+    TableCons     -> Exp
+
+%% exp ::= exp binop exp
+%% binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ |
+%%           `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ | and | or
+    Exp "+"   Exp -> Exp {left, cons("Plus")}
+    Exp MINUS Exp -> Exp {left, cons("Minus")}
+    Exp "*"   Exp -> Exp {left, cons("Times")}
+    Exp "/"   Exp -> Exp {left, cons("Divide")}
+    Exp "^"   Exp -> Exp {right, cons("Power")}
+    Exp "%"   Exp -> Exp {left, cons("Modulo")}
+    Exp ".."  Exp -> Exp {right, cons("Concat")}
+    Exp "<"   Exp -> Exp {left, cons("LowerThan")}
+    Exp "<="  Exp -> Exp {left, cons("LowerThanOrEqual")}
+    Exp ">"   Exp -> Exp {left, cons("GreaterThan")}
+    Exp "<"   Exp -> Exp {left, cons("GreaterThanOrEqual")}
+    Exp "=="  Exp -> Exp {left, cons("Equal")}
+    Exp "~="  Exp -> Exp {left, cons("NotEqual")}
+    Exp "and" Exp -> Exp {left, cons("And")}
+    Exp "or"  Exp -> Exp {left, cons("Or")}
+
+%% exp ::= unop exp
+%% unop ::= `-´ | not | `#´
+    MINUS Exp -> Exp {cons("Negative")}
+    "not" Exp -> Exp {cons("Not")}
+    "#"   Exp -> Exp {cons("Length")}
+
+%% prefixexp ::= var | functioncall | `(´ exp `)´
+    Var -> PrefixExp
+    FunctionCall -> PrefixExp
+    "(" Exp ")" -> PrefixExp {bracket}
+
+%% var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
+%% Note: prefixexp is any expression that can act as LHS in assignment
+    ID                    -> Var {cons("Var")}
+    PrefixExp "[" Exp "]" -> Var {cons("IndirectTableAccess")}
+    PrefixExp "." ID      -> Var {cons("DirectTableAccess")}
+
+%% functioncall ::=  prefixexp args | prefixexp `:´ Name args
+    PrefixExp Args        -> FunctionCall {cons("FunctionCall")}
+    PrefixExp ":" ID Args -> FunctionCall {cons("MethodCall")}
+
+%% args ::=  `(´ [explist] `)´ | tableconstructor | String
+    "(" ExpList ")"  -> Args {bracket}
+    "(" ")"          -> Args {ast("[]")}
+     TableCons       -> Args
+     STRING          -> Args {cons("String")}
+     RAWSTRING       -> Args {cons("RawString")}
+
+%% tableconstructor ::= `{´ [fieldlist] `}´
+    "{" "}"           -> TableCons {cons("TableConstructor")}
+    "{" FieldList "}" -> TableCons {cons("TableConstructor")}
+
+%% fieldlist ::= field {fieldsep field} [fieldsep]
+%% fieldsep ::= `,´ | `;´
+    {Field [\,\;]}+ [\,\;]? -> FieldList {ast("<1>")}
+
+%% field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
+    "[" Exp "]" "=" Exp -> Field {cons("CalculatedField")}
+    ID "=" Exp          -> Field {cons("KeyValueField")}
+    Exp                 -> Field {cons("ArrayField")}
+
+  context-free priorities
+
+%% http://www.lua.org/manual/5.1/manual.html#2.5.6
+    {right: "not"     Exp -> Exp
+            "#"       Exp -> Exp
+            MINUS     Exp -> Exp
+            Exp "^"   Exp -> Exp} >
+    {left:  Exp "*"   Exp -> Exp
+            Exp "/"   Exp -> Exp
+            Exp "%"   Exp -> Exp} >
+    {left:  Exp "+"   Exp -> Exp
+            Exp MINUS Exp -> Exp} >
+    {right: Exp ".."  Exp -> Exp} >
+    {left:  Exp "<"   Exp -> Exp
+            Exp ">"   Exp -> Exp
+            Exp "<="  Exp -> Exp
+            Exp ">="  Exp -> Exp
+            Exp "~="  Exp -> Exp
+            Exp "=="  Exp -> Exp} >
+    {left:  Exp "and" Exp -> Exp} >
+    {left:  Exp "or"  Exp -> Exp}
+
+  context-free restrictions
+
+    T -/- [\(]

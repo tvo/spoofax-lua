@@ -67,7 +67,7 @@ exports
 
     EOF           -/- ~[]
 
-    %% Follow restrictions for keywords 
+    %% Follow restrictions for keywords
     %% http://www.lua.org/manual/5.1/manual.html#2.1
     "and"    "break"  "do"   "else"     "elseif"
     "end"    "false"  "for"  "function" "if"
@@ -80,4 +80,7 @@ exports
 
     LAYOUT? -/- [\ \t\n\r]
     LAYOUT? -/- [\-].[\-]
+
+    %% Two minus signs is the start of a single line comment
+
     MINUS   -/- [\-]
