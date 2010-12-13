@@ -1,0 +1,39 @@
+module Strings
+
+exports
+
+  context-free start-symbols
+    Start
+
+  context-free syntax
+
+    RAWSTRING* -> Start {cons("Start")}
+
+  lexical syntax
+
+    %% Double- and single-quoted strings
+    "\"" DStringChar* "\""      -> STRING
+    "'" SStringChar* "'"        -> STRING
+    ~[\"\\\n\r] | StringChar    -> DStringChar
+    ~[\'\\\n\r] | StringChar    -> SStringChar
+    "\\" [0-9abfnrtv\\\"\'\n\r] -> StringChar
+
+    %% Simple multi line / raw string (no escapes)
+    "[[" (~[\]] | Bracket1)* "]]" -> RAWSTRING
+    [\]] -> Bracket1
+
+    %% Multi line / raw string with arbitrary >0 amount of equal signs
+    %% E.g. [===[ number of equal signs must match! ]===]
+    "[" StringBody "]"          -> RAWSTRING
+    "=" StringBody "="          -> StringBody
+    "[" (~[\]] | Bracket2)* "]" -> StringBody
+    [\]] -> Bracket2
+
+    %% Allows e.g. `[===[  ]=  ]===]'
+    "=" StringBody "=" StringTail "=" -> StringBody
+    ~[\]] (~[\]] | Bracket2)* "]"     -> StringTail
+
+  lexical restrictions
+
+    Bracket1 -/- [\]]
+    Bracket2 -/- [\=]

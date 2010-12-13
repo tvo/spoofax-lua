@@ -16,15 +16,26 @@ exports
     -> EOF
 
     %% Simple multi line comment
-    [\]] -> CommentChar
-    "--[[" (~[\]] | CommentChar)* "]]" -> LAYOUT
+    "--[[" (~[\]] | Bracket1)* "]]" -> LAYOUT
+    [\]] -> Bracket1
+
+    %% Multi line comment with arbitrary >0 amount of equal signs
+    %% E.g. --[===[ number of equal signs must match! ]===]
+    "--[" CommentBody "]"       -> LAYOUT
+    "="   CommentBody "="       -> CommentBody
+    "[" (~[\]] | Bracket2)* "]" -> CommentBody
+    [\]] -> Bracket2
+
+    %% nesting van 1: ]=] niet toegestaan
+    %% nesting van 2: ]==] niet toegestaan, etc.
 
   lexical restrictions
 
-    CommentChar   -/- [\]]
-
     %% EOF may not be followed by any char
-    EOF           -/- ~[]
+    EOF      -/- ~[]
+
+    Bracket1 -/- [\]]
+    %%Bracket2 -/- [\=]
 
   context-free restrictions
 

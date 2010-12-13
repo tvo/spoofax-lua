@@ -2,6 +2,7 @@ module Common
 
 imports
   Layout
+  Strings
 
 exports
 
@@ -30,22 +31,10 @@ exports
     %% Hexadecimal literals
     [0][xX] [0-9a-fA-F]+        -> NUMBER
 
-    %% Double- and single-quoted strings
-    "\"" DStringChar* "\""      -> STRING
-    "'" SStringChar* "'"        -> STRING
-    ~[\"\\\n\r] | StringChar    -> DStringChar
-    ~[\'\\\n\r] | StringChar    -> SStringChar
-    "\\" [0-9abfnrtv\\\"\'\n\r] -> StringChar
-
-    %% Multiline/raw string (no escapes)
-    [\]] -> MStringChar
-    "[[" (~[\]] | MStringChar)* "]]" -> RAWSTRING
-
   lexical restrictions
 
     %% Ensure greedy matching for lexicals
 
-    MStringChar   -/- [\]]
     NUMBER        -/- [a-zA-Z0-9\_\.]
     ID            -/- [a-zA-Z0-9\_]
 
