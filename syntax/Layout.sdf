@@ -1,0 +1,33 @@
+module Layout
+
+exports
+
+  lexical syntax
+
+    %% Whitespace
+    [\ \t\n\r] -> LAYOUT
+
+    %% Single line comment
+    "--" ~[\n\r]* ([\n\r] | EOF) -> LAYOUT
+
+    %% Optional first line comment
+    "#" ~[\n\r]* ([\n\r] | EOF) -> FIRSTLINECOMMENT
+
+    -> EOF
+
+    %% Simple multi line comment
+    [\]] -> CommentChar
+    "--[[" (~[\]] | CommentChar)* "]]" -> LAYOUT
+
+  lexical restrictions
+
+    CommentChar   -/- [\]]
+
+    %% EOF may not be followed by any char
+    EOF           -/- ~[]
+
+  context-free restrictions
+
+    %% Ensure greedy matching for comments
+    LAYOUT? -/- [\ \t\n\r]
+    LAYOUT? -/- [\-].[\-]

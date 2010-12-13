@@ -1,5 +1,8 @@
 module Common
 
+imports
+  Layout
+
 exports
 
   lexical syntax
@@ -38,34 +41,13 @@ exports
     [\]] -> MStringChar
     "[[" (~[\]] | MStringChar)* "]]" -> RAWSTRING
 
-    %% Whitespace
-    [\ \t\n\r] -> LAYOUT
-
-    %% Simple multi line comment
-    [\]] -> CommentChar
-    "--[[" (~[\]] | CommentChar)* "]]" -> BLOCKCOMMENT
-    BLOCKCOMMENT -> LAYOUT
-
-    %% Single line comment
-    "--" ~[\n\r]* ([\n\r] | EOF) -> LAYOUT
-
-    %% Optional first line comment
-    "#" ~[\n\r]* ([\n\r] | EOF) -> FIRSTLINECOMMENT
-
-    -> EOF
-
   lexical restrictions
 
     %% Ensure greedy matching for lexicals
 
     MStringChar   -/- [\]]
-    CommentChar   -/- [\]]
     NUMBER        -/- [a-zA-Z0-9\_\.]
     ID            -/- [a-zA-Z0-9\_]
-
-    %% EOF may not be followed by any char
-
-    EOF           -/- ~[]
 
     %% Follow restrictions for keywords
     %% http://www.lua.org/manual/5.1/manual.html#2.1
@@ -75,11 +57,6 @@ exports
     "repeat" "return" "then" "true"     "until"  "while" -/- [a-zA-Z0-9\_]
 
   context-free restrictions
-
-    %% Ensure greedy matching for comments
-
-    LAYOUT? -/- [\ \t\n\r]
-    LAYOUT? -/- [\-].[\-]
 
     %% Two minus signs is the start of a single line comment
 
