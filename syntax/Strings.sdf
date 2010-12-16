@@ -15,15 +15,40 @@ exports
     "[[" (~[\]] | Bracket1)* "]]" -> RAWSTRING
     [\]] -> Bracket1
 
-    %% Multi line / raw string with arbitrary >0 amount of equal signs
-    %% E.g. [===[ number of equal signs must match! ]===]
-    %% FIXME: need choose shortest match disambiguation
-    "[" StringBody "]"          -> RAWSTRING
-    "=" StringBody "="          -> StringBody
-    "[" (~[\]] | Bracket2)* "]" -> StringBody
-    [\]] -> Bracket2
+    %% Multi line / raw string with 1-5 equal signs
+    "[=[" (~[\]] | NFEquals1 | NFBracket1)* "]=]" -> RAWSTRING
+    "]" -> NFEquals1
+    "]=" -> NFBracket1
+
+    "[==[" (~[\]] | NFEquals2 | NFBracket2)* "]==]" -> RAWSTRING
+    "]" "="? -> NFEquals2
+    "]==" -> NFBracket2
+
+    "[===[" (~[\]] | NFEquals3 | NFBracket3)* "]===]" -> RAWSTRING
+    "]" "="? "="? -> NFEquals3
+    "]===" -> NFBracket3
+
+    "[====[" (~[\]] | NFEquals4 | NFBracket4)* "]====]" -> RAWSTRING
+    "]" "="? "="? "="? -> NFEquals4
+    "]====" -> NFBracket4
+
+    "[=====[" (~[\]] | NFEquals5 | NFBracket5)* "]=====]" -> RAWSTRING
+    "]" "="? "="? "="? "="? -> NFEquals5
+    "]=====" -> NFBracket5
+
+    %% five-long brackets should be enough for everyone right? =)
 
   lexical restrictions
 
+    NFEquals1  -/- [\=]
+    NFEquals2  -/- [\=]
+    NFEquals3  -/- [\=]
+    NFEquals4  -/- [\=]
+    NFEquals5  -/- [\=]
+    NFBracket1 -/- [\]]
+    NFBracket2 -/- [\]]
+    NFBracket3 -/- [\]]
+    NFBracket4 -/- [\]]
+    NFBracket5 -/- [\]]
+
     Bracket1 -/- [\]]
-    %%Bracket2 -/- [\=]

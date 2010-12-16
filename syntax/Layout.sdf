@@ -1,5 +1,8 @@
 module Layout
 
+imports
+  Strings
+
 exports
 
   lexical syntax
@@ -13,29 +16,15 @@ exports
     %% Optional first line comment
     "#" ~[\n\r]* ([\n\r] | EOF) -> FIRSTLINECOMMENT
 
+    %% Multi line comment with 0-5 equal signs
+    "--" RAWSTRING -> LAYOUT
+
     -> EOF
-
-    %% Simple multi line comment
-    "--[[" (~[\]] | Bracket1)* "]]" -> LAYOUT
-    [\]] -> Bracket1
-
-    %% Multi line comment with arbitrary >0 amount of equal signs
-    %% E.g. --[===[ number of equal signs must match! ]===]
-    "--[" CommentBody "]"       -> LAYOUT
-    "="   CommentBody "="       -> CommentBody
-    "[" (~[\]] | Bracket2)* "]" -> CommentBody
-    [\]] -> Bracket2
-
-    %% nesting van 1: ]=] niet toegestaan
-    %% nesting van 2: ]==] niet toegestaan, etc.
 
   lexical restrictions
 
     %% EOF may not be followed by any char
     EOF      -/- ~[]
-
-    Bracket1 -/- [\]]
-    %%Bracket2 -/- [\=]
 
   context-free restrictions
 
