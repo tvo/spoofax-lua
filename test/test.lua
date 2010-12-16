@@ -26,3 +26,4 @@ x[1] = y --indirect table access
 x.y = z  --direct table access
 foo:bar()
 t = { ["x"] = 1, y = 2, 3, {} }
+function foo(...) local args = ... end

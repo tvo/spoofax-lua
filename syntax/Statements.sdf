@@ -15,21 +15,29 @@ exports
 
 %% stat ::= varlist `=´ explist
     VarList "=" ExpList -> Stat {cons("Assignment")}
+
 %% stat ::= functioncall
     FunctionCall        -> Stat
+
 %% stat ::= do block end
     "do" Chunk "end"    -> Stat {cons("Chunk")}
+
 %% stat ::= while exp do block end
     "while" Exp "do" Chunk "end" -> Stat {cons("WhileLoop")}
+
 %% stat ::= repeat block until exp
     "repeat" Chunk "until" Exp -> Stat {cons("RepeatLoop")}
+
 %% stat ::= for Name `=´ exp `,´ exp [`,´ exp] do block end
     "for" Name "=" Exp "," Exp "," Exp "do" Chunk "end" -> Stat {cons("ForLoop")}
-    "for" Name "=" Exp "," Exp "do" Chunk "end"         -> Stat {cons("ForLoop")}
+    "for" Name "=" Exp "," Exp         "do" Chunk "end" -> Stat {cons("ForLoop")}
+
 %% stat ::= for namelist in explist do block end
     "for" NameList "in" ExpList "do" Chunk "end" -> Stat {cons("ForEachLoop")}
+
 %% stat ::= function funcname funcbody
     "function" FuncName FuncBody -> Stat {cons("FunctionDecl")}
+
 %% stat ::= local function Name funcbody
     "local" "function" ID FuncBody -> Stat {cons("LocalFunctionDecl")}
 
@@ -59,14 +67,14 @@ exports
     "(" ParList ")" Chunk "end" -> FuncBody {cons("Function")}
 
 %% parlist ::= namelist [`,´ `...´] | `...´
-                       -> ParList {ast("[]")}
-    NameList           -> ParList
-    NameList "," "..." -> ParList {cons("VarPars")}
-    "..."              -> ParList {cons("VarPars")}
-
-%% varlist ::= var {`,´ var}
-    {Var ","}+ -> VarList {ast("<1>")}
+                       -> ParList {cons("ParList")}
+    NameList           -> ParList {cons("ParList")}
+    NameList "," "..." -> ParList {cons("VarParList")}
+    "..."              -> ParList {cons("VarParList")}
 
 %% namelist ::= Name {`,´ Name}
     {Name ","}+ -> NameList {ast("<1>")}
     ID -> Name {cons("Name")}
+
+%% varlist ::= var {`,´ var}
+    {Var ","}+ -> VarList {ast("<1>")}
