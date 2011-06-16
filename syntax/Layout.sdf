@@ -13,10 +13,14 @@ exports
     %% Single line comment
     "--" ~[\n\r]* ([\n\r] | EOF) -> LAYOUT
 
+    %% Exclude multi line comments from the language of single line comments
+    %% Without this Spoofax r23058 throws an UnsupportedOperationException
+    "--[" "="* "[" ~[\n\r]* ([\n\r] | EOF) -> LAYOUT {reject}
+
     %% Optional first line comment
     "#" ~[\n\r]* ([\n\r] | EOF) -> FIRSTLINECOMMENT
 
-    %% Multi line comment with 0-5 equal signs
+    %% Multi line comment
     "--" RAWSTRING -> LAYOUT
 
     -> EOF
@@ -24,7 +28,7 @@ exports
   lexical restrictions
 
     %% EOF may not be followed by any char
-    EOF      -/- ~[]
+    EOF -/- ~[]
 
   context-free restrictions
 
