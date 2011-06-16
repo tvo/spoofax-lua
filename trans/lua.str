@@ -8,12 +8,11 @@ imports
   lib/editor-common.generated
   check
   desugar
-  generate
   globals
   rename
 
 rules // Main editor interface (defined by editor/Lua-Builders and -References.esv)
-  
+
   // Analyzes the current program, returning a tuple with errors, warnings, and notes;
   // each a list of (term, message) tuples or simply (message) terms.
   editor-analyze:
@@ -25,13 +24,6 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
       errors   := <collect-all(constraint-error, conc)> ast';
       warnings := <collect-all(constraint-warning, conc)> ast';
       notes    := <collect-all(constraint-note, conc)> ast'
-
-  // Transforms a selection to Java
-  generate-java:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-      filename := <guarantee-extension(|"java")> path;
-      result   := <to-java> selected
 
   // Prints the abstract syntax ATerm of a selection.
   generate-aterm:
