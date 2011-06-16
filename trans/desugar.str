@@ -39,7 +39,7 @@ strategies
       path' := <conc> (path, [name]);
       args' := <conc> ([Name("self")], args)
 
-  // `function x.y.z()...end' is sugar for `x.y.z = function()...end' 
+  // `function x.y.z()...end' is sugar for `x.y.z = function()...end'
   desugar:
     FunctionDecl(FunctionName(path), fun){a*} ->
       Assignment([path'], [fun]){a*}
@@ -50,18 +50,17 @@ strategies
       end
 
   // `local function x()...end' is sugar for `local x; x = function()...end'
-/*
   desugar:
-    LocalFunctionDecl(name, fun){a*} -> 
+    LocalFunctionDecl(name, fun){a*} ->
       [
         LocalVariableDecl([Name(name)]),
         Assignment([Var(name)], [fun]){a*}
       ]
-*/
+/*
   desugar:
     |[ local function ~name(~args) ~*body end ]| ->
     *|[ local ~name ; ~name = function(~args) ~*body end ]|
-
+*/
 /*
   desugar:
     Chunk(s) -> Chunk(t)
