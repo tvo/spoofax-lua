@@ -3,10 +3,11 @@ module Lua-Colorer
 imports Lua-Colorer.generated
 
 colorer
-                                                                      
-  // This file can be used for custom colorer rules.                  
-  //                                                                  
-  // See the imported file for a brief introduction and examples.     
 
-  STRING : blue               
+  // This file can be used for custom colorer rules.
+  //
+  // See the imported file for a brief introduction and examples.
+
+  STRING : blue
+  RAWSTRING : blue
   FIRSTLINECOMMENT : 100 100 0 italic

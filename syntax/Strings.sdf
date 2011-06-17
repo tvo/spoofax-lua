@@ -11,16 +11,60 @@ exports
     ~[\'\\\n\r] | StringChar    -> SStringChar
     [\\] [0-9abfnrtv\\\"\'\n\r] -> StringChar
 
+    %% Simple multi line / raw string (no escapes)
+    "[[" (~[\]] | Bracket1)* "]]" -> RAWSTRING
+    [\]] -> Bracket1
+
+    %% Multi line / raw string with 1-5 equal signs
+    "[=[" (~[\]] | NFEquals1 | NFBracket1)* "]=]" -> RAWSTRING
+    "]" -> NFEquals1
+    "]=" -> NFBracket1
+
+    "[==[" (~[\]] | NFEquals2 | NFBracket2)* "]==]" -> RAWSTRING
+    "]" "="? -> NFEquals2
+    "]==" -> NFBracket2
+
+    "[===[" (~[\]] | NFEquals3 | NFBracket3)* "]===]" -> RAWSTRING
+    "]" "="? "="? -> NFEquals3
+    "]===" -> NFBracket3
+
+    "[====[" (~[\]] | NFEquals4 | NFBracket4)* "]====]" -> RAWSTRING
+    "]" "="? "="? "="? -> NFEquals4
+    "]====" -> NFBracket4
+
+    "[=====[" (~[\]] | NFEquals5 | NFBracket5)* "]=====]" -> RAWSTRING
+    "]" "="? "="? "="? "="? -> NFEquals5
+    "]=====" -> NFBracket5
+
+  lexical restrictions
+
+    NFEquals1  -/- [\=]
+    NFEquals2  -/- [\=]
+    NFEquals3  -/- [\=]
+    NFEquals4  -/- [\=]
+    NFEquals5  -/- [\=]
+    NFBracket1 -/- [\]]
+    NFBracket2 -/- [\]]
+    NFBracket3 -/- [\]]
+    NFBracket4 -/- [\]]
+    NFBracket5 -/- [\]]
+
+    Bracket1 -/- [\]]
+
+  lexical syntax
+
     %% Multi line / raw string (no escapes)
     [\[] -> OPEN
     [\]] -> CLOSE
     [\=] -> EQ
+    EQ EQ EQ EQ EQ EQ -> EQ6
 
-    %% Parse `[=^n[ ... ]=^n]'
-    OPEN ~[]* CLOSE -> BODY
+    %% Parse `[=^n[ ... ]=^n]' with n >= 6
+    EQ6 OPEN ~[]* CLOSE EQ6 -> BODY
     EQ BODY EQ      -> BODY
-    OPEN BODY CLOSE -> RAWSTRING
+    OPEN BODY CLOSE -> RAWSTRING-MAGIC
+    RAWSTRING-MAGIC -> RAWSTRING
 
     %% Reject `[=^n[ ... ]=^n] ... ]=^m]'
     %% (i.e. accept only the shortest match)
-    RAWSTRING ~[]* CLOSE EQ* CLOSE -> RAWSTRING {reject}
+    RAWSTRING-MAGIC ~[]* CLOSE EQ* CLOSE -> RAWSTRING-MAGIC {reject}
