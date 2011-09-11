@@ -1,0 +1,54 @@
+language Lua
+module comments
+
+test first line comment [[
+  #!/usr/bin/env lua
+]]
+
+test single line comment [[[
+  --
+  --=
+  --[
+  --[=
+  -- comment
+  --= comment
+  --[ comment
+  --[= comment
+]]]
+
+test invalid single line comment [[[
+  --[[
+]]] parse fails
+
+// string.spt tests the meat of this, i.e. the different brackets
+test multi line comment [[[
+  --[[
+    comment
+  ]]
+]]]
+
+test statement after comment [[[
+  --[[ ]] a = b
+]]]
+
+test ambiguity between single and multi line comment [[[
+  --
+  --[==[ ]==] a = b
+  --[==[ ]==] c = d --
+]]]
+
+test comments [[
+  --[=[ This is a comment. ]=]
+
+  --[================[ comment ]================]
+
+  --[===[
+    --[[ ]]
+    --[=[ ]=]
+    [==[ ]==]
+    --===]==]===]
+  x = z
+  --[===[ ]===]
+
+  x=y
+]]

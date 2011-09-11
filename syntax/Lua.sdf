@@ -7,15 +7,13 @@ imports
   Recovery
 
 exports
-  start-symbols
+  context-free start-symbols
     Start
 
-  syntax
-
-    <FIRSTLINECOMMENT?-LEX>
-    <LAYOUT?-CF>
-    <Chunk-CF>
-    <LAYOUT?-CF>            -> Start {cons("File")}
+  context-free syntax
+    %% This incorrectly allows LAYOUT? before FIRSTLINECOMMENT, but
+    %% workarounds Spoofax/393, and is simpler than the correct grammar!
+    FIRSTLINECOMMENT? Chunk -> Start {cons("File")}
 
   context-free syntax
 

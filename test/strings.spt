@@ -1,0 +1,93 @@
+language Lua
+module strings
+
+// Each test tests that:
+// - string parsing is not greedy
+//   FIXME: this isn't really tested, need some good way to specify the
+//          expected result without a lot of duplication of ASTs first.
+// - too short closing bracket doesn't end string
+// - too long closing bracket doesn't end string
+
+test 0 equals signs strings [[[
+  s = [[ ]=] ]]
+  t = [[ ]]
+]]]
+
+test 1 equals sign strings [[[
+  s = [=[ ]] ]==] ]=]
+  t = [=[ ]=]
+]]]
+
+test 2 equals signs strings [[
+  s = [==[ ]=] ]===] ]==]
+  t = [==[ ]==]
+]]
+
+test 3 equals signs strings [[
+  s = [===[ ]==] ]====] ]===]
+  t = [===[ ]===]
+]]
+
+test 4 equals signs strings [[
+  s = [====[ ]===] ]=====] ]====]
+  t = [====[ ]====]
+]]
+
+test 5 equals signs strings [[
+  s = [=====[ ]====] ]======] ]=====]
+  t = [=====[ ]=====]
+]]
+
+test 6 equals signs strings [[
+  s = [======[ ]=====] ]=======] ]======]
+  t = [======[ ]======]
+]]
+
+test the best we can do in Spoofax r23058 [[
+  s = [======[ ]======]
+  t = [======[ ]======]
+  u = [======[ ]======]
+]]
+
+test did not work in r23058, works in r23317 [[
+  s = [======[ ]======]
+  t = [======[ ]======]
+  u = [======[ ]======]
+  v = [======[ ]======]
+]]
+
+test strings (1) [[
+  s = [[ string ]]
+  t = [[ string ]]
+  s = t
+
+  -- its either this works (if follow restriction is present)
+  s = [=[ This is a string. ]=]
+  t = [=[ This is a string. ]=]
+  s = t
+
+  -- or this works (if follow restriction is not present)
+  s = [==[  ]==  ]==]
+
+  -- `infix' fix
+  s = [==[  ]==[  ]==]
+
+  -- what about less equals signs?
+  s = [===[  ]==  ]===]
+
+  -- more equals signs?
+  s = [==[  ]===[  ]==]
+
+  -- WRONG!
+  s = [==[  ]=]  ]==]
+
+  -- more tails?
+  s = [==[  ]== ]==  ]==]
+]]
+
+test strings (2) [[
+  local s, t
+  s = [=[ string ]==] ]] ]===] ] ]= ]== ]==] ]=[==[ ]==] ]==]==] ]=]
+  t = [=[ string ]=]
+  s = t
+]]

@@ -1,0 +1,18 @@
+language Lua
+module unicode
+
+test Latin-1 Supplement [[
+  s = "¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
+]]
+
+test Latin-1 Extended-A (0xC4 0x81) [[
+  s = "ā"
+]]
+
+test Georgian (0xE1 0x83 0x9C) [[
+  s = " ლ ";
+]]
+
+test Horizontal ellipsis (0xE2 0x80 0xA6) [[
+  s = ' … ';
+]]
