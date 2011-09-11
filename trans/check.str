@@ -32,6 +32,11 @@ rules
       )
 rules
 
+  constraint-error:
+    file@ File(Some(comment), _) -> (comment, $[Construct may not be preceded by layout])
+    where
+      <origin-text; not(string-starts-with(|"#"))> file
+
   // Reports an error if a property type is undefined.
   // This error is reported on the type name 'type'.
   constraint-error:
@@ -40,7 +45,7 @@ rules
       not(!type => "String"); // String and Int are built-in types
       not(!type => "Int");
       not(<GetEntity> type) // no entity for this type
-  
+
   // Reports an error if an entity is defined more than once.
   // This constraint is implemented by testing if the "bag" of
   // all entities x is not a singleton list.
@@ -48,12 +53,12 @@ rules
     Entity(x, _) -> (x, $[Duplicate entity name])
     where
       not(<bagof-GetEntity> x => [_])
-  
+
   constraint-warning:
     Entity(x, _) -> (x, $[Entity names must start with a capital])
     where
       not(<string-starts-with-capital> x)
-  
+
   constraint-note:
     Module(x @ "example", _) -> (x, $[This is just an example program in the "entities" language
                                       (this note is defined in trans/check.str) ])

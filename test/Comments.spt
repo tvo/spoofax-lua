@@ -3,7 +3,7 @@ module Comments
 
 test first line comment [[
   #!/usr/bin/env lua
-]]
+]] 1 error
 
 test single line comment [[[
   --
