@@ -3,42 +3,42 @@ The Complete Syntax of Lua
 
 Here is the complete syntax of Lua in extended BNF. (It does not describe operator precedences.)
 
-    chunk ::= {stat [`;´]} [laststat [`;´]]
+x   chunk ::= {stat [`;´]} [laststat [`;´]]
 
-    block ::= chunk
+x   block ::= chunk
 
-    stat ::=  varlist `=´ explist | 
-         functioncall | 
-         do block end | 
-         while exp do block end | 
-         repeat block until exp | 
-         if exp then block {elseif exp then block} [else block] end | 
-         for Name `=´ exp `,´ exp [`,´ exp] do block end | 
-         for namelist in explist do block end | 
-         function funcname funcbody | 
-         local function Name funcbody | 
-         local namelist [`=´ explist] 
+x   stat ::=  varlist `=´ explist |
+         functioncall |
+         do block end |
+         while exp do block end |
+         repeat block until exp |
+         if exp then block {elseif exp then block} [else block] end |
+         for Name `=´ exp `,´ exp [`,´ exp] do block end |
+         for namelist in explist do block end |
+         function funcname funcbody |
+         local function Name funcbody |
+         local namelist [`=´ explist]
 
-    laststat ::= return [explist] | break
+x   laststat ::= return [explist] | break
 
     funcname ::= Name {`.´ Name} [`:´ Name]
 
     varlist ::= var {`,´ var}
 
-    var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name 
+x   var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
 
     namelist ::= Name {`,´ Name}
 
-    explist ::= {exp `,´} exp
+x   explist ::= {exp `,´} exp
 
-    exp ::=  nil | false | true | Number | String | `...´ | function | 
-         prefixexp | tableconstructor | exp binop exp | unop exp 
+x   exp ::=  nil | false | true | Number | String | `...´ | function |
+         prefixexp | tableconstructor | exp binop exp | unop exp
 
-    prefixexp ::= var | functioncall | `(´ exp `)´
+x   prefixexp ::= var | functioncall | `(´ exp `)´
 
-    functioncall ::=  prefixexp args | prefixexp `:´ Name args 
+x   functioncall ::=  prefixexp args | prefixexp `:´ Name args
 
-    args ::=  `(´ [explist] `)´ | tableconstructor | String 
+x   args ::=  `(´ [explist] `)´ | tableconstructor | String
 
     function ::= function funcbody
 
@@ -46,19 +46,18 @@ Here is the complete syntax of Lua in extended BNF. (It does not describe operat
 
     parlist ::= namelist [`,´ `...´] | `...´
 
-    tableconstructor ::= `{´ [fieldlist] `}´
+x   tableconstructor ::= `{´ [fieldlist] `}´
 
-    fieldlist ::= field {fieldsep field} [fieldsep]
+x   fieldlist ::= field {fieldsep field} [fieldsep]
 
-    field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
+x   field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
 
-    fieldsep ::= `,´ | `;´
+x   fieldsep ::= `,´ | `;´
 
-    binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ | 
-         `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ | 
+x   binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ |
+         `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ |
          and | or
 
-    unop ::= `-´ | not | `#´
+x   unop ::= `-´ | not | `#´
 
 Source: <http://www.lua.org/manual/5.1/manual.html#8>
- 
