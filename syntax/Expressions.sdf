@@ -25,7 +25,7 @@ exports
 %% binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ |
 %%           `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ | and | or
     Exp "+"   Exp -> Exp {left, cons("Plus")}
-    Exp MINUS Exp -> Exp {left, cons("Minus")}
+    Exp MINUS Exp -> Exp {left, ast("Minus(<1>, <3>)")}
     Exp "*"   Exp -> Exp {left, cons("Times")}
     Exp "/"   Exp -> Exp {left, cons("Divide")}
     Exp "^"   Exp -> Exp {right, cons("Power")}
@@ -34,7 +34,7 @@ exports
     Exp "<"   Exp -> Exp {left, cons("LowerThan")}
     Exp "<="  Exp -> Exp {left, cons("LowerThanOrEqual")}
     Exp ">"   Exp -> Exp {left, cons("GreaterThan")}
-    Exp "<"   Exp -> Exp {left, cons("GreaterThanOrEqual")}
+    Exp ">="  Exp -> Exp {left, cons("GreaterThanOrEqual")}
     Exp "=="  Exp -> Exp {left, cons("Equal")}
     Exp "~="  Exp -> Exp {left, cons("NotEqual")}
     Exp "and" Exp -> Exp {left, cons("And")}
@@ -42,7 +42,7 @@ exports
 
 %% exp ::= unop exp
 %% unop ::= `-´ | not | `#´
-    MINUS Exp -> Exp {cons("Negative")}
+    MINUS Exp -> Exp {ast("Minus(<2>)")}
     "not" Exp -> Exp {cons("Not")}
     "#"   Exp -> Exp {cons("Length")}
 
@@ -54,23 +54,23 @@ exports
 %% var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
 %% Note: prefixexp is any expression that can act as LHS in assignment
     ID                    -> Var {cons("Var")}
-    PrefixExp "[" Exp "]" -> Var {cons("IndirectTableAccess")}
-    PrefixExp "." ID      -> Var {cons("DirectTableAccess")}
+    PrefixExp "[" Exp "]" -> Var {cons("Index")}
+    PrefixExp "." ID      -> Var {cons("Field")}
 
 %% functioncall ::=  prefixexp args | prefixexp `:´ Name args
     PrefixExp Args        -> FunctionCall {cons("FunctionCall")}
     PrefixExp ":" ID Args -> FunctionCall {cons("MethodCall")}
 
 %% args ::=  `(´ [explist] `)´ | tableconstructor | String
-    "(" ExpList ")"  -> Args {bracket}
-    "(" ")"          -> Args {ast("[]")}
+    "(" ExpList ")"  -> Args {cons("ExpList")}
+    "(" ")"          -> Args {cons("None")}
      TableCons       -> Args
      STRING          -> Args {cons("String")}
      RAWSTRING       -> Args {cons("RawString")}
 
 %% tableconstructor ::= `{´ [fieldlist] `}´
-    "{" "}"           -> TableCons {cons("TableConstructor")}
-    "{" FieldList "}" -> TableCons {cons("TableConstructor")}
+    "{" "}"           -> TableCons {ast("TableCons([])")}
+    "{" FieldList "}" -> TableCons {cons("TableCons")}
 
 %% fieldlist ::= field {fieldsep field} [fieldsep]
 %% fieldsep ::= `,´ | `;´

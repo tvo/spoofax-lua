@@ -28,7 +28,7 @@ strategies
   desugar:
     MethodCall(path, name, args) -> FunctionCall(path', args')
     where
-      path' := DirectTableAccess(path, name);
+      path' := Field(path, name);
       args' := <conc> ([path], args)
 
   // `function x:z()...end' is sugar for `function x.z(self)...end'
@@ -45,7 +45,7 @@ strategies
       Assignment([path'], [fun]){a*}
     where
       // FIXME I bet there is a strategy to do this in the library
-      let cp = rec x(([y] -> Var(y)) <+ !DirectTableAccess(<init; x>, <last>)) in
+      let cp = rec x(([y] -> Var(y)) <+ !Field(<init; x>, <last>)) in
         path' := <cp> path
       end
 

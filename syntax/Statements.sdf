@@ -20,7 +20,7 @@ exports
     FunctionCall        -> Stat
 
 %% stat ::= do block end
-    "do" Chunk "end"    -> Stat {cons("Chunk")}
+    "do" Chunk "end"    -> Stat {cons("Block")}
 
 %% stat ::= while exp do block end
     "while" Exp "do" Chunk "end" -> Stat {cons("WhileLoop")}
@@ -46,10 +46,11 @@ exports
     "local" NameList "=" ExpList -> Stat {cons("LocalVariableDecl")}
 
 %% stat ::= if exp then block {elseif exp then block} [else block] end
-    If ElseIf* Else? "end"    -> Stat {cons("Branch")}
+    If ElseIf* Else "end"     -> Stat {cons("IfThen")}
     "if" Exp "then" Chunk     -> If {cons("If")}
     "elseif" Exp "then" Chunk -> ElseIf {cons("ElseIf")}
     "else" Chunk              -> Else {cons("Else")}
+                              -> Else {cons("None")}
 
 %% funcname ::= Name {`.´ Name} [`:´ Name]
     {ID "."}+ ":" ID -> FuncName {cons("MethodName")}
@@ -67,10 +68,10 @@ exports
     "(" ParList ")" Chunk "end" -> FuncBody {cons("Function")}
 
 %% parlist ::= namelist [`,´ `...´] | `...´
-                       -> ParList {cons("ParList")}
+                       -> ParList {ast("ParList([])")}
     NameList           -> ParList {cons("ParList")}
     NameList "," "..." -> ParList {cons("VarParList")}
-    "..."              -> ParList {cons("VarParList")}
+    "..."              -> ParList {ast("VarParList([])")}
 
 %% namelist ::= Name {`,´ Name}
     {Name ","}+ -> NameList {ast("<1>")}

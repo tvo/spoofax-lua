@@ -1,0 +1,29 @@
+language Lua
+module Numbers
+
+selector File(_, Chunk([Assignment(_, [Number(MARKER)]), _]))
+
+setup header [[
+  _ =
+]]
+
+test [[ 12.34 ]] parse to "12.34"
+test [[ 12    ]] parse to "12"
+test [[ 12.   ]] parse to "12."
+test [[   .34 ]] parse to ".34"
+test [[ 1e3   ]] parse to "1e3"
+test [[ 1e+3  ]] parse to "1e+3"
+test [[ 1e-3  ]] parse to "1e-3"
+test [[ 1E03  ]] parse to "1E03"
+test [[ 0xabc ]] parse to "0xabc"
+test [[ 0xDEF ]] parse to "0xDEF"
+test [[ 0Xfed ]] parse to "0Xfed"
+test [[ 0Xcba ]] parse to "0Xcba"
+
+test [[ .  ]] parse fails
+test [[ 1e ]] parse fails
+test [[ 0x ]] parse fails
+
+setup footer [[
+  footer()
+]]

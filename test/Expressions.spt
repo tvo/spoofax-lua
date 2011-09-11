@@ -1,0 +1,62 @@
+language Lua
+module Expressions
+
+selector File(_, Chunk([Assignment(_, [MARKER]), _]))
+
+setup header [[
+  _ =
+]]
+
+// var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
+test var/name  [[ x    ]] parse to Var("x")
+test var/index [[ x[1] ]] parse to Index(Var("x"), Number("1"))
+test var/field [[ x.y  ]] parse to Field(Var("x"), "y")
+
+// exp ::=  nil | false | true | Number | String | `...´ | function |
+//      prefixexp | tableconstructor | exp binop exp | unop exp
+test exp/nil    [[ nil   ]] parse to Nil
+test exp/false  [[ false ]] parse to False
+test exp/true   [[ true  ]] parse to True
+test exp/Number [[ 56.78 ]] parse to Number(_)
+test exp/String [[ "str" ]] parse to String(_)
+test exp/String [[[ [[]] ]]] parse to RawString(_)
+test exp/vararg [[ ...   ]] parse to VarArgs
+
+// prefixexp ::= var | functioncall | `(´ exp `)´
+test prefixexp/var [[ x.test   ]] parse to Field(Var(_), _)
+test prefixexp/fun [[ x().test ]] parse to Field(FunctionCall(_,_), _)
+test prefixexp/par [[ (x).test ]] parse to Field(Var(_), _)
+
+// functioncall ::=  prefixexp args | prefixexp `:´ Name args
+test functioncall [[ x() ]] parse to FunctionCall(Var("x"), _)
+test methodcall [[ x:y() ]] parse to MethodCall(Var("x"), "y", _)
+
+// args ::=  `(´ [explist] `)´ | tableconstructor | String
+test functioncall/nothing [[ f()  ]] parse to FunctionCall(_, None)
+test functioncall/explist [[ f(x) ]] parse to FunctionCall(_, ExpList(_))
+test functioncall/table   [[ f{1} ]] parse to FunctionCall(_, TableCons(_))
+test functioncall/string  [[ f"s" ]] parse to FunctionCall(_, String(_))
+test functioncall/string  [[[ f[[s]] ]]] parse to FunctionCall(_, RawString(_))
+
+// tableconstructor ::= `{´ [fieldlist] `}´
+// fieldlist ::= field {fieldsep field} [fieldsep]
+// field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
+// fieldsep ::= `,´ | `;´
+
+// NOTE: the 44 and 59 integers are the ASCII codes of the "," and ";"
+// separators; I found no way to get rid of those in the parser without
+// mangling the AST in some other way.
+
+test table cons (1) [[ {}        ]] parse to TableCons([])
+test table cons (2) [[ {a=1}     ]] parse to TableCons([_])
+test table cons (3) [[ {a=1,b=2} ]] parse to TableCons([_,44,_])
+test table cons (4) [[ {a=1;b=2} ]] parse to TableCons([_,59,_])
+test table cons (5) [[ {["a"]=1} ]] parse to TableCons([_])
+test table cons (6) [[ {2}       ]] parse to TableCons([_])
+test table cons (7) [[ {2,3}     ]] parse to TableCons([_,44,_])
+test table cons (8) [[ {2,b=3}   ]] parse to TableCons([_,44,_])
+
+// this is here because all setup blocks together must be parseable
+setup footer [[
+  f()
+]]

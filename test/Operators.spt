@@ -1,0 +1,37 @@
+language Lua
+module Operators
+
+selector File(_, Chunk([Assignment(_, [MARKER]), _]))
+
+setup header [[
+  _ =
+]]
+
+// binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ |
+//      `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ |
+//      and | or
+test +  [[ x + y  ]] parse to Plus(_,_)
+test -  [[ x - y  ]] parse to Minus(_,_)
+test *  [[ x * y  ]] parse to Times(_,_)
+test /  [[ x / y  ]] parse to Divide(_,_)
+test ^  [[ x ^ y  ]] parse to Power(_,_)
+test %  [[ x % y  ]] parse to Modulo(_,_)
+test .. [[ x..y   ]] parse to Concat(_,_)
+test <  [[ x <  y ]] parse to LowerThan(_,_)
+test <= [[ x <= y ]] parse to LowerThanOrEqual(_,_)
+test >  [[ x >  y ]] parse to GreaterThan(_,_)
+test >= [[ x >= y ]] parse to GreaterThanOrEqual(_,_)
+test == [[ x == y ]] parse to Equal(_,_)
+test ~= [[ x ~= y ]] parse to NotEqual(_,_)
+test and[[ x and y]] parse to And(_,_)
+test or [[ x or y ]] parse to Or(_,_)
+
+// unop ::= `-´ | not | `#´
+test -x  [[ -x    ]] parse to Minus(_)
+test not [[ not x ]] parse to Not(_)
+test #   [[ #x    ]] parse to Length(_)
+
+// this is here because all setup blocks together must be parseable
+setup footer [[
+  f()
+]]
