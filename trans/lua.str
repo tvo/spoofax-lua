@@ -21,9 +21,9 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
       editor-init;
       analyze;
       ast'     := <DecoratedAst>;
-      errors   := <collect-all(constraint-error, conc)> ast';
-      warnings := <collect-all(constraint-warning, conc)> ast';
-      notes    := <collect-all(constraint-note, conc)> ast'
+      errors   := <collect-all(check-error, conc)> ast';
+      warnings := <collect-all(check-warning, conc)> ast';
+      notes    := <collect-all(check-note, conc)> ast'
 
   // Prints the abstract syntax ATerm of a selection.
   generate-aterm:
