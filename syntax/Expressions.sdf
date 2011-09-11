@@ -62,19 +62,17 @@ exports
     PrefixExp ":" ID Args -> FunctionCall {cons("MethodCall")}
 
 %% args ::=  `(´ [explist] `)´ | tableconstructor | String
-    "(" ExpList ")"  -> Args {cons("ExpList")}
-    "(" ")"          -> Args {cons("None")}
-     TableCons       -> Args
-     STRING          -> Args {cons("String")}
-     RAWSTRING       -> Args {cons("RawString")}
+    "(" ExpList? ")" -> Args {cons("ArgList")}
+     TableCons       -> Args {cons("ArgTableCons")}
+     STRING          -> Args {cons("ArgString")}
+     RAWSTRING       -> Args {cons("ArgRawString")}
 
 %% tableconstructor ::= `{´ [fieldlist] `}´
-    "{" "}"           -> TableCons {ast("TableCons([])")}
-    "{" FieldList "}" -> TableCons {cons("TableCons")}
+    "{" FieldList? "}" -> TableCons {cons("TableCons")}
 
 %% fieldlist ::= field {fieldsep field} [fieldsep]
 %% fieldsep ::= `,´ | `;´
-    {Field [\,\;]}+ [\,\;]? -> FieldList {ast("<1>")}
+    {Field [\,\;]}+ [\,\;]? -> FieldList {cons("FieldList")}
 
 %% field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
     "[" Exp "]" "=" Exp -> Field {cons("CalculatedField")}

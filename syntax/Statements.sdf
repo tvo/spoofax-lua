@@ -57,9 +57,8 @@ exports
     {ID "."}+        -> FuncName {cons("FunctionName")}
 
 %% laststat ::= return [explist] | break
-    "return" ExpList -> LastStat {cons("Return")}
-    "return"         -> LastStat {cons("Return")}
-    "break"          -> LastStat {cons("Break")}
+    "return" ExpList? -> LastStat {cons("Return")}
+    "break"           -> LastStat {cons("Break")}
 
 %% function ::= function funcbody
     "function" FuncBody -> Function {bracket}

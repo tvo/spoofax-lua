@@ -7,22 +7,52 @@ strategies
 
   desugar-top = innermost(desugar)
 
-  desugar-top':
-    x@File(_, _) -> y
-    where
-      y := <innermost(desugar)> x
+rules
 
   desugar:
-    Chunk(s, ls) -> Chunk(t)
-    where
-      t := <conc> (s, [ls])
+    <is-list; one(is-list)> -> <flatten-list>
+
+  desugar:
+    Chunk(stat*, laststat) -> Chunk([stat*, laststat])
+
+  desugar:
+    Return(None()) -> Return([])
+
+  desugar:
+    Return(Some(t)) -> Return(t)
+
+  desugar:
+    ArgList(None()) -> []
+
+  desugar:
+    ArgList(Some(t)) -> t
+
+  desugar:
+    ArgTableCons(t) -> [t]
+
+  desugar:
+    ArgString(t) -> [String(t)]
+
+  desugar:
+    ArgRawString(t) -> [RawString(t)]
+
+  desugar:
+    ParList(t*) -> t*
+
+  desugar:
+    VarParList(t*) -> [t*, VarArgs()]
+
+  desugar:
+    TableCons(None()) -> TableCons([])
+
+  desugar:
+    TableCons(Some(FieldList(t*, _))) -> TableCons(<remove-all(is-int)> t*)
+
+rules
 
   // always include optional step size with `for' loops
   desugar:
     ForLoop(a, b, c, d) -> ForLoop(a, b, c, Number("1"), d)
-
-  desugar:
-    Return() -> Return([])
 
   // `x:z()' is sugar for `x.z(x)'
   desugar:
@@ -41,8 +71,8 @@ strategies
 
   // `function x.y.z()...end' is sugar for `x.y.z = function()...end'
   desugar:
-    FunctionDecl(FunctionName(path), fun){a*} ->
-      Assignment([path'], [fun]){a*}
+    FunctionDecl(FunctionName(path), fun) ->
+      Assignment([path'], [fun])
     where
       // FIXME I bet there is a strategy to do this in the library
       let cp = rec x(([y] -> Var(y)) <+ !Field(<init; x>, <last>)) in
@@ -51,28 +81,8 @@ strategies
 
   // `local function x()...end' is sugar for `local x; x = function()...end'
   desugar:
-    LocalFunctionDecl(name, fun){a*} ->
+    LocalFunctionDecl(name, fun) ->
       [
         LocalVariableDecl([Name(name)]),
-        Assignment([Var(name)], [fun]){a*}
+        Assignment([Var(name)], [fun])
       ]
-/*
-  desugar:
-    |[ local function ~name(~args) ~*body end ]| ->
-    *|[ local ~name ; ~name = function(~args) ~*body end ]|
-*/
-/*
-  desugar:
-    Chunk(s) -> Chunk(t)
-    where
-      t := <flatten-list> s;
-      not(<equal> (s, t))    // prevent infinite application of rule
-*/
-
-/*
-  desugar:
-    |[ ~*s ]| -> |[ ~*t ]|
-    where
-      t := <flatten-list> s;
-      not(<equal> (s, t))    // prevent infinite application of rule
-*/

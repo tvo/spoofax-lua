@@ -1,0 +1,61 @@
+language Lua
+module Desugar
+
+selector File(_, Chunk([MARKER]))
+
+test chunk without laststat [[ do end ]]
+build generate-decorated-ast to Block(_)
+
+test return/none [[ return ]]
+build generate-decorated-ast to Return([])
+
+test return/some [[ return x ]]
+build generate-decorated-ast to Return([Var("x")])
+
+test arglist/none [[ f() ]]
+build generate-decorated-ast to FunctionCall(_, [])
+
+test arglist/some [[ f(x) ]]
+build generate-decorated-ast to FunctionCall(_, [Var("x")])
+
+test arglist/tablecons [[ f{} ]]
+build generate-decorated-ast to FunctionCall(_, [TableCons([])])
+
+test arglist/string [[ f "hi" ]]
+build generate-decorated-ast to FunctionCall(_, [String(_)])
+
+test arglist/rawstring [[[ f [[hi]] ]]]
+build generate-decorated-ast to FunctionCall(_, [RawString(_)])
+
+test tablecons/none [[ t = {} ]]
+build generate-decorated-ast to Assignment(_, [TableCons([])])
+
+test tablecons/some [[ t = {1,2} ]]
+build generate-decorated-ast to Assignment(_, [TableCons([_,_])])
+
+test for loop without step [[ for i=1,10 do end ]]
+build generate-decorated-ast to [[ for i=1,10,1 do end ]]
+
+test method call/nothing [[ x:z() ]]
+build generate-decorated-ast to [[ x.z(x) ]]
+
+test method call/explist [[ x:z(y) ]]
+build generate-decorated-ast to [[ x.z(x, y) ]]
+
+test method call/tablecons [[ x:z{} ]]
+build generate-decorated-ast to [[ x.z(x, {}) ]]
+
+test method call/string [[ x:z "hi" ]]
+build generate-decorated-ast to [[ x.z(x, "hi") ]]
+
+test method call/rawstring [[[ x:z [[hi]] ]]]
+build generate-decorated-ast to [[[ x.z(x, [[hi]]) ]]]
+
+test method decl [[ function x:z() end ]]
+build generate-decorated-ast to [[ function x.z(self) end ]]
+
+test function decl [[ function x.y.z() end ]]
+build generate-decorated-ast to [[ x.y.z = function() end ]]
+
+test local function decl [[ local function x() end ]]
+build generate-decorated-ast to [[ local x; x = function() end ]]

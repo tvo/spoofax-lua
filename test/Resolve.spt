@@ -1,0 +1,14 @@
+language Lua
+module Resolve
+
+test resolve variable [[
+  local [[var]]
+  [[var]] = 12
+]]
+resolve #6 to #2
+
+test resolve function [[
+  local function [[fun]]() end
+  [[fun]]()
+]]
+resolve #2 to #1

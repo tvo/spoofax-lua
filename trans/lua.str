@@ -45,10 +45,12 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   editor-resolve:
     (node, position, ast, path, project-path) -> target
     where
-      <debug(!"Resolve: ")> node;
-      pos' := <desugar-position'(desugar|ast)> position;
-      ast' := <DecoratedAst>;
-      target := <decl-of> (<term-at-position(|pos')> ast')
+      <debug(!"Resolving : ")> node;
+      target := <decl-of> node;
+      <debug(!"Resolved  : ")> target
+      // pos' := <desugar-position'(desugar|ast)> position;
+      // ast' := <DecoratedAst>;
+      // target := <decl-of> (<term-at-position(|pos')> ast')
 
   desugar-position'(desugar|ast):
     position -> position'

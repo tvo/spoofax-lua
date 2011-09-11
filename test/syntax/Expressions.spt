@@ -32,11 +32,11 @@ test functioncall [[ x() ]] parse to FunctionCall(Var("x"), _)
 test methodcall [[ x:y() ]] parse to MethodCall(Var("x"), "y", _)
 
 // args ::=  `(´ [explist] `)´ | tableconstructor | String
-test functioncall/nothing [[ f()  ]] parse to FunctionCall(_, None)
-test functioncall/explist [[ f(x) ]] parse to FunctionCall(_, ExpList(_))
-test functioncall/table   [[ f{1} ]] parse to FunctionCall(_, TableCons(_))
-test functioncall/string  [[ f"s" ]] parse to FunctionCall(_, String(_))
-test functioncall/string  [[[ f[[s]] ]]] parse to FunctionCall(_, RawString(_))
+test functioncall/nothing [[ f()  ]] parse to FunctionCall(_, ArgList(None))
+test functioncall/explist [[ f(x) ]] parse to FunctionCall(_, ArgList(Some(_)))
+test functioncall/table   [[ f{1} ]] parse to FunctionCall(_, ArgTableCons(_))
+test functioncall/string  [[ f"s" ]] parse to FunctionCall(_, ArgString(_))
+test functioncall/string  [[[ f[[s]] ]]] parse to FunctionCall(_, ArgRawString(_))
 
 // tableconstructor ::= `{´ [fieldlist] `}´
 // fieldlist ::= field {fieldsep field} [fieldsep]
@@ -47,14 +47,14 @@ test functioncall/string  [[[ f[[s]] ]]] parse to FunctionCall(_, RawString(_))
 // separators; I found no way to get rid of those in the parser without
 // mangling the AST in some other way.
 
-test table cons (1) [[ {}        ]] parse to TableCons([])
-test table cons (2) [[ {a=1}     ]] parse to TableCons([_])
-test table cons (3) [[ {a=1,b=2} ]] parse to TableCons([_,44,_])
-test table cons (4) [[ {a=1;b=2} ]] parse to TableCons([_,59,_])
-test table cons (5) [[ {["a"]=1} ]] parse to TableCons([_])
-test table cons (6) [[ {2}       ]] parse to TableCons([_])
-test table cons (7) [[ {2,3}     ]] parse to TableCons([_,44,_])
-test table cons (8) [[ {2,b=3}   ]] parse to TableCons([_,44,_])
+test table cons (1) [[ {}        ]] parse to TableCons(None)
+test table cons (2) [[ {a=1}     ]] parse to TableCons(Some(FieldList([_], None)))
+test table cons (3) [[ {a=1,b=2} ]] parse to TableCons(Some(FieldList([_,44,_], None)))
+test table cons (4) [[ {a=1;b=2} ]] parse to TableCons(Some(FieldList([_,59,_], None)))
+test table cons (5) [[ {["a"]=1} ]] parse to TableCons(Some(FieldList([_], None)))
+test table cons (6) [[ {2}       ]] parse to TableCons(Some(FieldList([_], None)))
+test table cons (7) [[ {2,3}     ]] parse to TableCons(Some(FieldList([_,44,_], None)))
+test table cons (8) [[ {2,b=3}   ]] parse to TableCons(Some(FieldList([_,44,_], None)))
 
 // this is here because all setup blocks together must be parseable
 setup footer [[
