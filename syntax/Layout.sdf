@@ -11,14 +11,20 @@ exports
     [\ \t\n\r] -> LAYOUT
 
     %% Single line comment
-    "--" ~[\n\r]* ([\n\r] | EOF) -> LAYOUT
+    %% LINECOMMENT factors out common part of single line comments.
+    %% COMMENT indirection is necessary for the multi line comment rejection.
+    ~[\n\r]* ([\n\r] | EOF) -> LINECOMMENT 
+    "--" LINECOMMENT -> COMMENT
+    COMMENT -> LAYOUT
 
     %% Exclude multi line comments from the language of single line comments
     %% Without this Spoofax r23058 throws an UnsupportedOperationException
-    "--[" "="* "[" ~[\n\r]* ([\n\r] | EOF) -> LAYOUT {reject}
+    %% and Spoofax r23317 reports an ambiguity.
+    %% If LINECOMMENT abstraction is used here, it does not work anymore...
+    "--[" [\=]* "[" ~[\n\r]* ([\n\r] | EOF) -> COMMENT {reject}
 
     %% Optional first line comment
-    "#" ~[\n\r]* ([\n\r] | EOF) -> FIRSTLINECOMMENT
+    "#" LINECOMMENT -> FIRSTLINECOMMENT
 
     %% Multi line comment
     "--" RAWSTRING -> LAYOUT
