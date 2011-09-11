@@ -1,0 +1,118 @@
+language Lua
+module Statements
+
+test function call [[
+  fun_no_args()
+]]
+
+test function call, varargs [[
+  fun_args(x, ...)
+]]
+
+test function call, table arg [[
+  fun_table_arg {}
+]]
+
+test function call, string arg [[[
+  fun_string_arg[[hello]]
+]]]
+
+test empty block [[
+  do end
+]]
+
+test while loop [[
+  while false do end
+]]
+
+test repeat loop [[
+  repeat until true
+]]
+
+test for loop [[
+  for x = 1, 10 do end
+]]
+
+test for loop with step [[
+  for x = 1, 10, 1 do end
+]]
+
+test for each loop [[
+  for x, y in pairs(table) do end
+]]
+
+test function decl [[
+  function foo(x, y) end
+]]
+
+test function decl, varargs [[
+  function bar(x, ...) end
+]]
+
+test local function decl [[
+  local function foo() end
+]]
+
+test local function decl, varargs [[
+  local function bar(...) end
+]]
+
+test local var decl [[
+  local x, y, z
+]]
+
+test local var decl with assignment [[
+  local x, y, z = 1, 2, 3
+]]
+
+test if then [[
+  if true then end
+]]
+
+test if then else [[
+  if true then else end
+]]
+
+test if then elseif end [[
+  if true then elseif false then elseif false then end
+]]
+
+test if then elseif else end [[
+  if true then elseif false then elseif false then else end
+]]
+
+test break [[
+  do break end
+]]
+
+test return [[
+  do return end
+]]
+
+test assignment / single [[
+  x = y
+]]
+
+test assignment / multi [[
+  x, y, z = 1, 2, 3
+]]
+
+test indirect table access [[
+  x[1] = y
+]]
+
+test direct table access [[
+  x.y = z
+]]
+
+test method call [[
+  foo:bar()
+]]
+
+test table initializer [[
+  t = { ["x"] = 1, y = 2, 3, {} }
+]]
+
+test varargs use [[
+  function foo(...) local args = ... end
+]]

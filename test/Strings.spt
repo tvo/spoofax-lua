@@ -1,5 +1,5 @@
 language Lua
-module strings
+module Strings
 
 // Each test tests that:
 // - string parsing is not greedy

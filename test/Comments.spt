@@ -1,5 +1,5 @@
 language Lua
-module comments
+module Comments
 
 test first line comment [[
   #!/usr/bin/env lua
