@@ -1,7 +1,7 @@
 language Lua
 module Desugar
 
-selector File(_, Chunk([MARKER]))
+start symbol AnyStat
 
 test chunk without laststat [[ do end ]]
 build generate-decorated-ast to Block(_)

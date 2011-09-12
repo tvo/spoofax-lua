@@ -1,11 +1,7 @@
 language Lua
 module Operators
 
-selector File(_, Chunk([Assignment(_, [MARKER]), _]))
-
-setup header [[
-  _ =
-]]
+start symbol Exp
 
 // binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ |
 //      `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ |
@@ -31,7 +27,3 @@ test -x  [[ -x    ]] parse to Minus(_)
 test not [[ not x ]] parse to Not(_)
 test #   [[ #x    ]] parse to Length(_)
 
-// this is here because all setup blocks together must be parseable
-setup footer [[
-  f()
-]]

@@ -1,11 +1,7 @@
 language Lua
 module Expressions
 
-selector File(_, Chunk([Assignment(_, [MARKER]), _]))
-
-setup header [[
-  _ =
-]]
+start symbol Exp
 
 // var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
 test var/name  [[ x    ]] parse to Var("x")
@@ -55,8 +51,3 @@ test table cons (5) [[ {["a"]=1} ]] parse to TableCons(Some(FieldList([_], None)
 test table cons (6) [[ {2}       ]] parse to TableCons(Some(FieldList([_], None)))
 test table cons (7) [[ {2,3}     ]] parse to TableCons(Some(FieldList([_,44,_], None)))
 test table cons (8) [[ {2,b=3}   ]] parse to TableCons(Some(FieldList([_,44,_], None)))
-
-// this is here because all setup blocks together must be parseable
-setup footer [[
-  f()
-]]

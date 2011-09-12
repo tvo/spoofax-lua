@@ -1,7 +1,7 @@
 language Lua
 module Statements
 
-selector File(_, Chunk([MARKER]))
+start symbol AnyStat
 
 test function call [[
   fun()
@@ -130,7 +130,7 @@ parse to Block(Chunk([], Break))
 test return [[
   do return end
 ]]
-parse to Block(Chunk([], Return))
+parse to Block(Chunk([], Return(None)))
 
 test assignment/single [[
   x = y

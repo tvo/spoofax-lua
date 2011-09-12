@@ -1,6 +1,8 @@
 language Lua
 module Strings
 
+start symbol Start
+
 // Each test tests that:
 // - string parsing is not greedy
 //   FIXME: this isn't really tested, need some good way to specify the

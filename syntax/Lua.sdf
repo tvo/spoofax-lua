@@ -19,3 +19,12 @@ exports
 
 %% exp ::= function
     Function -> Exp
+
+%% For testing
+exports
+  context-free start-symbols
+    AnyStat Exp
+
+  context-free syntax
+    Stat -> AnyStat
+    LastStat -> AnyStat
