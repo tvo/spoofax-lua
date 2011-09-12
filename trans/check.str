@@ -22,9 +22,9 @@ rules
 rules
 
   check-error:
-    file@ File(Some(comment), _) -> (comment, $[Construct may not be preceded by layout])
+    File(Some(comment), _) -> (comment, $[Construct may not be preceded by layout])
     where
-      <origin-text; not(string-starts-with(|"#"))> file
+      not(<origin-location> comment => (1,0,_,_))
 
   check-error:
     Break(){} -> (<id>, "No loop to break")

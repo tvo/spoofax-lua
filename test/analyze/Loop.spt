@@ -3,10 +3,12 @@ module Loop
 
 start symbol Start
 
+setup [[ local pairs, t ]]
+
 test break/while   [[ while true do break end ]]
-test break/repeat  [[ repeat break until true ]]
+test break/repeat  [[ repeat break until false ]]
 test break/for     [[ for i=1,10 do break end ]]
-test break/foreach [[ for i in t do break end ]]
+test break/foreach [[ for i in pairs(t) do break end ]]
 
 test break/toplevel [[ break ]]
 1 errors

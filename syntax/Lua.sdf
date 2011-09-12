@@ -23,7 +23,8 @@ exports
 %% For testing
 exports
   context-free start-symbols
-    AnyStat Exp
+    %% Chunk is nearly equivalent to Start, but disables analyzing.
+    Chunk AnyStat Exp
 
   context-free syntax
     Stat -> AnyStat

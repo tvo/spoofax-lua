@@ -1,7 +1,7 @@
 language Lua
 module Ambs
 
-start symbol Start
+start symbol Chunk
 
 test double function call [[
   x = f(y)(z)

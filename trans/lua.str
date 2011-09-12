@@ -28,13 +28,19 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   // Analyzes the current program, returning a tuple with errors, warnings, and notes;
   // each a list of (term, message) tuples or simply (message) terms.
   editor-analyze:
-    (ast, path, project-path) -> (ast', errors, warnings, notes)
+    (ast, path, project-path) -> result
     with
       editor-init;
-      ast'     := <analyze>;
-      errors   := <collect-all(check-error, conc)> ast';
-      warnings := <collect-all(check-warning, conc)> ast';
-      notes    := <collect-all(check-note, conc)> ast'
+      ast' := <analyze>;
+      if !ast' => File(_, _) then
+        errors   := <collect-all(check-error, conc)> ast';
+        warnings := <collect-all(check-warning, conc)> ast';
+        notes    := <collect-all(check-note, conc)> ast';
+        result   := (ast', errors, warnings, notes)
+      else
+        // For syntax tests
+        result   := (ast', [], [], [])
+      end
 
   // Prints the AST of a selection.
   generate-aterm:

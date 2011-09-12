@@ -1,7 +1,7 @@
 language Lua
 module Strings
 
-start symbol Start
+start symbol Chunk
 
 // Each test tests that:
 // - string parsing is not greedy
@@ -58,7 +58,7 @@ test did not work in r23058, works in r23317 [[
   v = [======[ ]======]
 ]]
 
-test strings (1) [[
+test strings (1) [[[
   s = [[ string ]]
   t = [[ string ]]
   s = t
@@ -85,11 +85,11 @@ test strings (1) [[
 
   -- more tails?
   s = [==[  ]== ]==  ]==]
-]]
+]]]
 
-test strings (2) [[
+test strings (2) [[[
   local s, t
   s = [=[ string ]==] ]] ]===] ] ]= ]== ]==] ]=[==[ ]==] ]==]==] ]=]
   t = [=[ string ]=]
   s = t
-]]
+]]]

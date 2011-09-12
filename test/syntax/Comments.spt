@@ -1,11 +1,7 @@
 language Lua
 module Comments
 
-start symbol Start
-
-test first line comment [[
-  #!/usr/bin/env lua
-]] 1 error
+start symbol Chunk
 
 test single line comment [[[
   --

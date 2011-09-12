@@ -1,7 +1,7 @@
 language Lua
 module Resolve
 
-start symbol Start
+start symbol Chunk
 
 // FIXME: all should be resolve #2 to #1 but Spoofax is broken (Spoofax/421)
 

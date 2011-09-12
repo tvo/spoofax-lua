@@ -36,7 +36,7 @@ parse to FunctionDecl(
   Function(ParList([Name("x"), Name("y")]), Chunk(_))
 )
 
-test function decl, varargs [[ function bar(x, ...) end ]]
+test function decl/varargs [[ function bar(x, ...) end ]]
 parse to FunctionDecl(
   FunctionName(["bar"]),
   Function(VarParList([Name("x")]), Chunk(_))
