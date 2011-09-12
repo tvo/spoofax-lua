@@ -15,12 +15,14 @@ strategies
   rename-scope(s) = {|RenameId: s|}
   rename-scope = rename-scope(all(rename-top'))
 
+rules
+
   // Variable declaration
   rename: d@Name(x) -> Name(y)
     where
       y := x{<new>};
       rules(
-        VarDef   : y -> d 
+        VarDef   : y -> d
         RenameId : x -> y
       )
 

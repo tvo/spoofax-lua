@@ -6,15 +6,13 @@ imports
 
 strategies
 
-  globals-top = topdown(try(globals))
+  globals-top = alltd(globals)
 
   globals:
     a@Assignment(vars, _) -> a
     where
       <map(try(
-        ?d@Var(x);
+        ?d@Var(x{});
         not(<GlobalVar> x);
-        rules(
-          GlobalVar : x -> d
-        )
+        rules( GlobalVar : x -> d )
       ))> vars

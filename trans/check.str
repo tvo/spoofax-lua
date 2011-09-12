@@ -21,10 +21,6 @@ rules
 
 rules
 
-  check-note = fail
-
-  check-warning = fail
-
   check-error:
     file@ File(Some(comment), _) -> (comment, $[Construct may not be preceded by layout])
     where
@@ -32,3 +28,13 @@ rules
 
   check-error:
     Break(){} -> (<id>, "No loop to break")
+
+  check-note:
+    Var(x{}) -> (<id>, $[Use of global [x]])
+    where
+      <GlobalVar> x
+
+  check-warning:
+    Var(x{}) -> (<id>, $[Use of unassigned global [x]])
+    where
+      not(<GlobalVar> x)
