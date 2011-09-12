@@ -3,14 +3,15 @@ module Lua.main
 imports Lua-Builders Lua-Colorer Lua-Completions Lua-Folding Lua-Outliner Lua-References Lua-Syntax
 
 language General properties
-                  
+
   name          : Lua
   id            : lua
   extends       : Root
-                  
+
   description   : "Spoofax/IMP-generated editor for the Lua language"
   url           : http://strategoxt.org
-                  
+
   extensions    : lua
   table         : include/Lua.tbl
   start symbols : Start
+  disambiguator : editor-disambiguate
