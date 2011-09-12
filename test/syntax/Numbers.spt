@@ -1,5 +1,5 @@
 language Lua
-module Numbers
+module syntax_Numbers
 
 start symbol Exp
 

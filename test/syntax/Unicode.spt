@@ -1,5 +1,5 @@
 language Lua
-module Unicode
+module syntax_Unicode
 
 start symbol Exp
 

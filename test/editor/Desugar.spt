@@ -1,5 +1,5 @@
 language Lua
-module Desugar
+module editor_Desugar
 
 start symbol AnyStat
 

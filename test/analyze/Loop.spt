@@ -1,5 +1,5 @@
 language Lua
-module Loop
+module analyze_Loop
 
 start symbol Start
 

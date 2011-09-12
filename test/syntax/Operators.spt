@@ -1,5 +1,5 @@
 language Lua
-module Operators
+module syntax_Operators
 
 start symbol Exp
 

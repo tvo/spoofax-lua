@@ -1,5 +1,5 @@
 language Lua
-module Resolve
+module editor_Resolve
 
 start symbol Chunk
 

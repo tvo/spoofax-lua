@@ -1,5 +1,5 @@
 language Lua
-module Expressions
+module syntax_Expressions
 
 start symbol Exp
 

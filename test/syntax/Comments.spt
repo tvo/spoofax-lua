@@ -1,5 +1,5 @@
 language Lua
-module Comments
+module syntax_Comments
 
 start symbol Chunk
 

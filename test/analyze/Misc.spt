@@ -1,5 +1,5 @@
 language Lua
-module Misc
+module analyze_Misc
 
 start symbol Start
 

@@ -1,5 +1,5 @@
 language Lua
-module Ambs
+module syntax_Ambs
 
 start symbol Chunk
 
