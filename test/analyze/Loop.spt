@@ -1,0 +1,25 @@
+language Lua
+module Loop
+
+start symbol Start
+
+test break/while   [[ while true do break end ]]
+test break/repeat  [[ repeat break until true ]]
+test break/for     [[ for i=1,10 do break end ]]
+test break/foreach [[ for i in t do break end ]]
+
+test break/toplevel [[ break ]]
+1 errors
+
+test break/function [[
+  for x = 1,10 do
+    (function()
+      break  --invalid break!
+    end)()
+  end
+]]
+1 errors
+
+test break/nested [[
+  while false do repeat break until true break end
+]]

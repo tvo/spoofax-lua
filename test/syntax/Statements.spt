@@ -51,6 +51,9 @@ parse to LocalFunctionDecl("bar", Function(VarParList([]), Chunk(_)))
 test local var decl [[ local x, y, z ]]
 parse to LocalVariableDecl([Name("x"), Name("y"), Name("z")])
 
+test local var decl/empty [[ local ]]
+parse fails
+
 test local var decl with assignment [[ local x, y, z = 1, 2, 3 ]]
 parse to LocalVariableDecl(
   [Name("x"), Name("y"), Name("z")],
@@ -71,8 +74,8 @@ test if then elseif else end [[
 ]]
 parse to IfThen(_, [_,_], Else(_))
 
-test break [[ do break end ]]
-parse to Block(Chunk([], Break))
+test break [[ repeat break until true ]]
+parse to RepeatLoop(Chunk([], Break), True)
 
 test return [[ do return end ]]
 parse to Block(Chunk([], Return(None)))

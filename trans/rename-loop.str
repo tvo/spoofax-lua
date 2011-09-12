@@ -1,0 +1,40 @@
+module rename-loop
+
+imports
+  include/Lua
+
+strategies
+
+  rename-loop-top = {|CurrentLoop: alltd(rename-loop) |}
+
+rules
+
+  // Loop declaration
+  declare-loop: x -> x'{y}
+    with
+      {|CurrentLoop:
+        y := <new>;
+        rules(
+          // LoopDef : y -> x
+          CurrentLoop := y
+        );
+        x' := <all(alltd(rename-loop))> x
+      |}
+
+  rename-loop: ForLoop(_, _, _, _, _) -> <declare-loop>
+  rename-loop: ForEachLoop(_, _, _) -> <declare-loop>
+  rename-loop: RepeatLoop(_, _) -> <declare-loop>
+  rename-loop: WhileLoop(_, _) -> <declare-loop>
+
+  // Loop undeclaration
+  undeclare-loop: x -> x'
+    with
+      {|CurrentLoop:
+        rules( CurrentLoop :- _ );
+        x' := <all(alltd(rename-loop))> x
+      |}
+
+  rename-loop: Function(_, _) -> <undeclare-loop>
+
+  // Loop use
+  rename-loop: Break() -> <id>{<CurrentLoop>}

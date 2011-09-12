@@ -7,6 +7,7 @@ imports
   desugar
   globals
   rename
+  rename-loop
 
 rules
 
@@ -15,6 +16,7 @@ rules
     with
       ast' := <desugar-top;
                rename-top;
+               rename-loop-top;
                globals-top> ast
 
 rules
@@ -27,3 +29,6 @@ rules
     file@ File(Some(comment), _) -> (comment, $[Construct may not be preceded by layout])
     where
       <origin-text; not(string-starts-with(|"#"))> file
+
+  check-error:
+    Break(){} -> (<id>, "No loop to break")
