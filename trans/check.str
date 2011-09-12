@@ -11,14 +11,11 @@ imports
 rules
 
   analyze:
-    (ast, path, project-path) -> (ast', path, project-path)
+    (ast, path, project-path) -> ast'
     with
       ast' := <desugar-top;
                rename-top;
-               globals-top> ast;
-      rules(
-        DecoratedAst := ast'
-      )
+               globals-top> ast
 
 rules
 

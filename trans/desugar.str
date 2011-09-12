@@ -2,10 +2,11 @@ module desugar
 
 imports
   include/Lua
+  lib/editor-common.generated
 
 strategies
 
-  desugar-top = innermost(desugar)
+  desugar-top = innermost(origin-track-forced(desugar))
 
 rules
 

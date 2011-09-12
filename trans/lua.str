@@ -19,49 +19,27 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
     (ast, path, project-path) -> (ast', errors, warnings, notes)
     with
       editor-init;
-      analyze;
-      ast'     := <DecoratedAst>;
+      ast'     := <analyze>;
       errors   := <collect-all(check-error, conc)> ast';
       warnings := <collect-all(check-warning, conc)> ast';
       notes    := <collect-all(check-note, conc)> ast'
 
-  // Prints the abstract syntax ATerm of a selection.
+  // Prints the AST of a selection.
   generate-aterm:
-    (selected, position, ast, path, project-path) -> (filename, result)
+    (selected, position, ast, path, project-path) -> (filename, selected)
     with
-      filename := <guarantee-extension(|"aterm")> path;
-      result   := selected // we just return the input term
+      filename := <guarantee-extension(|"aterm")> path
 
-  generate-decorated-ast:
-    (selected, position, ast, path, project-path) -> (filename, result)
-    with
-      filename := <guarantee-extension(|"aterm")> path;
-      pos' := <desugar-position'(desugar|ast)> position;
-      ast' := <DecoratedAst>;
-      result := <term-at-position(|pos')> ast'
+  // Prints the decorated AST of a selection.
+  // Only diff with generate-aterm is the lack of (source) annotation in Lua-Builders.esv
+  generate-decorated-ast = generate-aterm
 
   // Resolves a reference when the user control-clicks or presses F3 in the editor.
   // Only succeeds for nodes of the form Type(_) for which GetEntity is defined.
   editor-resolve:
     (node, position, ast, path, project-path) -> target
     where
-      <debug(!"Resolving : ")> node;
-      target := <decl-of> node;
-      <debug(!"Resolved  : ")> target
-      // pos' := <desugar-position'(desugar|ast)> position;
-      // ast' := <DecoratedAst>;
-      // target := <decl-of> (<term-at-position(|pos')> ast')
-
-  desugar-position'(desugar|ast):
-    position -> position'
-    where
-      <debug(!"position: ")> position;
-      ast'  := <at-position(!<id>{MARKER()}|position)> ast;
-      <debug(!"ast': ")> ast';
-      ast'' := <innermost(preserve-annos({?x; desugar; not(?x)}))> ast';
-      <debug(!"ast'': ")> ast'';
-      position' := <position-of-term({?_{a*}; <one(?MARKER())> a*})> ast'';
-      <debug(!"position': ")> position'
+      target := <decl-of> node
 
   decl-of:
     Var(x) -> <VarDef <+ GlobalVar> x
