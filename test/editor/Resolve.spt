@@ -1,14 +1,71 @@
 language Lua
 module Resolve
 
-test resolve variable [[
-  local [[var]]
-  [[var]] = 12
+start symbol Start
+
+// FIXME: all should be resolve #2 to #1 but Spoofax is broken (Spoofax/421)
+
+test global variable [[
+  do end --trick the SelectionFetcher...
+  [[x]] = 12
+  [[x]] = 13
 ]]
 resolve #6 to #2
 
-test resolve function [[
+test global function [[
+  function [[fun]]() end
+  [[fun]]()
+]]
+resolve #4 to #3
+
+test local variable [[
+  local [[x]]
+  [[x]] = 12
+]]
+resolve #5 to #2
+
+test local function [[
   local function [[fun]]() end
   [[fun]]()
 ]]
 resolve #2 to #1
+
+test scope/chunk (1) [[
+  local [[x]]
+  do
+    [[x]] = 12
+    local x
+  end
+]]
+resolve #5 to #2
+
+test scope/chunk (2) [[
+  local x
+  do
+    local [[x]]
+    [[x]] = 12
+  end
+]]
+resolve #5 to #2
+
+test scope/forloop [[
+  for [[x]]=1,10 do
+    [[x]] = 12
+  end
+]]
+resolve #4 to #1
+
+test scope/foreachloop [[
+  for [[x]] in pairs(t) do
+    [[x]] = 12
+  end
+]]
+resolve #5 to #2
+
+test repeat loop condition [[
+  local x
+  repeat
+    local [[x]]
+  until [[x]]
+]]
+resolve #4 to #2
