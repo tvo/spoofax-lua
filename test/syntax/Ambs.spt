@@ -1,0 +1,8 @@
+language Lua
+module Ambs
+
+start symbol Start
+
+test double function call [[
+  x = f(y)(z)
+]]
