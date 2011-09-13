@@ -8,5 +8,8 @@
        <extension id="lua.parser" name="Lua Parser" point="org.eclipse.imp.runtime.parser">
           <parser class="lua.LuaParseController" language="Lua">
           </parser>
-       </extension>    
+       </extension>
+       <extension point="org.eclipse.imp.runtime.labelProvider">
+          <labelProvider class="lua.LuaLabelProvider" language="Lua"></labelProvider>
+       </extension>
     </plugin>

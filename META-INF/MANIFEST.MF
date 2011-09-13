@@ -15,7 +15,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.strategoxt.imp.runtime,
  org.spoofax.aterm,
  org.spoofax.jsglr,
- org.junit
+ org.junit,
+ org.spoofax.terms
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Bundle-ActivationPolicy: lazy
 Export-Package: lua
