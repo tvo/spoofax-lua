@@ -23,7 +23,7 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
     (ast, path, project-path) -> <try(disambiguate-top)> ast
 
   disambiguate-top:
-    amb(t*) -> <getfirst(?File(_, _))> t*
+    amb(t*) -> <getfirst(?File(_, _)) <+ getfirst(?amb(_); disambiguate-top)> t*
 
   // Analyzes the current program, returning a tuple with errors, warnings, and notes;
   // each a list of (term, message) tuples or simply (message) terms.
