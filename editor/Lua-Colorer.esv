@@ -9,5 +9,9 @@ colorer
   // See the imported file for a brief introduction and examples.
 
   STRING : blue
-  RAWSTRING : blue
-  FIRSTLINECOMMENT : 100 100 0 italic
+
+  // For some reason when using only RAWSTRING here, the whole start of
+  // vendor/lua5.1-tests/attrib.lua is rendered blue (Spoofax r23335)
+  RAWSTRING.RawString : blue
+
+  FIRSTLINECOMMENT : 127 127 0 italic
