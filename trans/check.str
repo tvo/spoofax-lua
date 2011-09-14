@@ -21,6 +21,10 @@ rules
 
 rules
 
+  check-note = fail
+  check-warning = fail
+  check-error = fail
+
   check-error:
     File(Some(comment), _) -> (comment, $[Construct may not be preceded by layout])
     where
@@ -29,12 +33,24 @@ rules
   check-error:
     Break(){} -> (<id>, "No loop to break")
 
-  check-note:
-    Var(x{}) -> (<id>, $[Use of global [x]])
-    where
-      <GlobalVar> x
+  // check-note:
+  //   Var(x{}) -> (<id>, $[Use of global [x]])
+  //   where
+  //     <GlobalVar> x
 
   check-warning:
     Var(x{}) -> (<id>, $[Use of unassigned global [x]])
     where
-      not(<GlobalVar> x)
+      not(<GlobalVar> x) // ever assigned?
+
+  check-warning:
+    d@ Var(x{}) -> (<id>, $[Unused global [x]])
+    where
+      <GlobalVar> x; ?d; // first assignment?
+      not(<VarUse> x)    // ever used?
+
+  check-warning:
+    Name(x) -> (<id>, $[Unused local [x]])
+    where
+      not(!x => "self" + !x => "_");
+      not(<VarUse> x)

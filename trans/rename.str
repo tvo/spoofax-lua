@@ -29,7 +29,8 @@ rules
   // Variable use
   rename: Var(x) -> Var(y)
     where
-      y := <RenameId> x
+      y := <RenameId> x;
+      rules( VarUse : y -> y )
 
   // Scopes
   rename: x@Chunk(_) -> <rename-scope> x

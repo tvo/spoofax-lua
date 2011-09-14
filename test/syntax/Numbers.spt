@@ -3,19 +3,19 @@ module syntax_Numbers
 
 start symbol Exp
 
-test [[ 12.34 ]]
-test [[ 12    ]]
-test [[ 12.   ]]
-test [[   .34 ]]
-test [[ 1e3   ]]
-test [[ 1e+3  ]]
-test [[ 1e-3  ]]
-test [[ 1E03  ]]
-test [[ 0xabc ]]
-test [[ 0xDEF ]]
-test [[ 0Xfed ]]
-test [[ 0Xcba ]]
+test x.y [[ 12.34 ]]
+test x   [[ 12    ]]
+test x.  [[ 12.   ]]
+test .y  [[   .34 ]]
+test e   [[ 1e3   ]]
+test e+  [[ 1e+3  ]]
+test e-  [[ 1e-3  ]]
+test E   [[ 1E03  ]]
+test hex [[ 0xabc ]]
+test hEX [[ 0xDEF ]]
+test Hex [[ 0Xfed ]]
+test HEX [[ 0XCBA ]]
 
-test [[ .  ]] parse fails
-test [[ 1e ]] parse fails
-test [[ 0x ]] parse fails
+test fail/.   [[ .  ]] parse fails
+test fail/e   [[ 1e ]] parse fails
+test fail/hex [[ 0x ]] parse fails

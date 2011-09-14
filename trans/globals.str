@@ -9,10 +9,16 @@ strategies
   globals-top = alltd(globals)
 
   globals:
-    a@Assignment(vars, _) -> a
+    Assignment(var*, exp*) -> <id>
     where
-      <map(try(
+      <all(try(
         ?d@Var(x{});
         not(<GlobalVar> x);
         rules( GlobalVar : x -> d )
-      ))> vars
+      ))> var*;
+      <globals-top> exp*
+
+  globals:
+    Var(x{}) -> <id>
+    where
+      rules( VarUse : x -> x )

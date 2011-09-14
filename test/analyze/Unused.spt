@@ -1,0 +1,24 @@
+language Lua
+module analyze_Unused
+
+start symbol Start
+
+test unused local [[
+  local x
+]]
+1 warning
+
+test unused global [[
+  function f() end
+]]
+1 warning
+
+test used local [[
+  local x
+  x = x
+]]
+
+test used global [[
+  function f() end
+  f()
+]]
