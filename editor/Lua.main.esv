@@ -14,4 +14,3 @@ language General properties
   extensions    : lua
   table         : include/Lua.tbl
   start symbols : Start
-  disambiguator : editor-disambiguate
