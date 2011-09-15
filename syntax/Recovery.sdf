@@ -1,5 +1,6 @@
 module Recovery
 imports
+  Common
   Statements
 
 exports
@@ -9,4 +10,6 @@ exports
     LastStat -> Stat {recover}
 
     %% Helps content completion
-    Var -> Stat2 {recover}
+    COMPLETION -> Stat   {cons("WATER")}
+    COMPLETION -> ElseIf {cons("WATER")}
+    COMPLETION -> Else   {cons("WATER")}

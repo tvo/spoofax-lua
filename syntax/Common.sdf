@@ -8,6 +8,8 @@ exports
 
   lexical syntax
 
+    [a-zA-Z0-9\_]* "COMPLETION" [0-9]+ -> COMPLETION
+
     "-" -> MINUS
 
     %% Keywords may not be used as identifier
@@ -37,6 +39,7 @@ exports
 
     %% Ensure greedy matching for lexicals
 
+    COMPLETION    -/- [0-9]
     NUMBER        -/- [a-zA-Z0-9\_\.]
     ID            -/- [a-zA-Z0-9\_]
 
