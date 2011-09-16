@@ -6,15 +6,20 @@ imports
 
 strategies
 
-  desugar-top = innermost(origin-track-forced(desugar))
+  desugar-top =
+    bottomup(try(origin-track-forced(desugar)))
+
+  // convert [x, y, z] to Field(Field(Var(x), y), z)
+  path-to-fields =
+    ([y] -> Var(y)) <+ !Field(<init; path-to-fields>, <last>)
 
 rules
 
   desugar:
-    <is-list; one(is-list)> -> <flatten-list>
-
-  desugar:
-    Chunk(stat*, laststat) -> Chunk([stat*, laststat])
+    Chunk(stat*, laststat) -> Chunk([stat'*, laststat])
+    where
+      // last desugaring rule might have generated a list in our list...
+      stat'* := <flatten-list> stat*
 
   desugar:
     Return(None()) -> Return([])
@@ -49,8 +54,6 @@ rules
   desugar:
     TableCons(Some(FieldList(t*, _))) -> TableCons(<remove-all(is-int)> t*)
 
-rules
-
   // always include optional step size with `for' loops
   desugar:
     ForLoop(a, b, c, d) -> ForLoop(a, b, c, Number("1"), d)
@@ -65,9 +68,9 @@ rules
   // `function x:z()...end' is sugar for `function x.z(self)...end'
   desugar:
     FunctionDecl(MethodName(path, name), Function(args, body)) ->
-      FunctionDecl(FunctionName(path'), Function(args', body))
+      Assignment([path'], [Function(args', body)])
     where
-      path' := <conc> (path, [name]);
+      path' := <path-to-fields> <conc> (path, [name]);
       args' := <conc> ([Name("self")], args)
 
   // `function x.y.z()...end' is sugar for `x.y.z = function()...end'
@@ -75,10 +78,7 @@ rules
     FunctionDecl(FunctionName(path), fun) ->
       Assignment([path'], [fun])
     where
-      // FIXME I bet there is a strategy to do this in the library
-      let cp = rec x(([y] -> Var(y)) <+ !Field(<init; x>, <last>)) in
-        path' := <cp> path
-      end
+      path' := <path-to-fields> path
 
   // `local function x()...end' is sugar for `local x; x = function()...end'
   desugar:
