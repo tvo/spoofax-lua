@@ -64,7 +64,11 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   editor-complete:
     (node, position, ast, path, project-path) -> proposals
     where
-      <debug(!"Complete: ")> node;
+      <debug(!"Complete: ")> (node, position)
+    where
       if !node => Var(COMPLETION(prefix)) then
-        proposals := <all-keys-VarDef>
+        {|Proposals:
+          <analyze> (ast, path, project-path);
+          proposals := <conc> (<Proposals>, <all-keys-GlobalVar>)
+        |}
       end

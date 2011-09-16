@@ -2,6 +2,7 @@ module rename
 
 imports
   include/Lua
+  lib/editor-common.generated
 
 strategies
 
@@ -46,3 +47,9 @@ rules
         y    := <rename-top'> x;
         exp' := <rename-top'> exp
       |}
+
+  // Completion
+  rename: COMPLETION(_) -> <id>
+    where
+      all-keys-RenameId => proposals;
+      rules( Proposals := proposals )
