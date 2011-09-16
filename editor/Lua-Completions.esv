@@ -17,11 +17,10 @@ completions
   completion template Start Chunk Stat Stat2 :
     "if " <cond> " then\n\t" (cursor) "\nend" (blank)
 
-  // FIXME: sorts seem one off here, but this works...
-  completion template If :
+  completion template ElseIf :
     "elseif " <cond> " then\n\t" (cursor) (blank)
 
-  completion template ElseIf :
+  completion template Else :
     "else\n\t" (cursor) (blank)
 
   completion template Start Chunk Stat Stat2 :

@@ -8,7 +8,7 @@ exports
 
   lexical syntax
 
-    [a-zA-Z0-9\_]* "COMPLETION" [0-9]+ -> COMPLETION
+    [a-zA-Z0-9\_]* "CONTENTCOMPLETE" [0-9]+ -> COMPLETION
 
     "-" -> MINUS
 
