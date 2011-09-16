@@ -10,6 +10,6 @@ exports
     LastStat -> Stat {recover}
 
     %% Helps content completion
-    COMPLETION -> Stat   {ast("WATER(Var(<1>))")}
+    COMPLETION -> Stat   {cons("Var")}
     COMPLETION -> ElseIf {cons("WATER")}
     COMPLETION -> Else   {cons("WATER")}
