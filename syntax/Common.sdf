@@ -15,11 +15,10 @@ exports
     %% Keywords may not be used as identifier
     %% (There is ambiguity, at least for "function")
     %% http://www.lua.org/manual/5.1/manual.html#2
-    Keyword -> ID {reject}
     "and"    | "break"  | "do"   | "else"     | "elseif" |
     "end"    | "false"  | "for"  | "function" | "if"     |
     "in"     | "local"  | "nil"  | "not"      | "or"     |
-    "repeat" | "return" | "then" | "true"     | "until"  | "while" -> Keyword
+    "repeat" | "return" | "then" | "true"     | "until"  | "while" -> ID {reject}
 
     %% Identifiers
     [a-zA-Z\_][a-zA-Z0-9\_]* -> ID
