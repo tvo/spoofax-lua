@@ -6,3 +6,11 @@
 *.generated.*
 !/lib/editor-common.generated.str
 !/build.generated.xml
+
+# used for jar builds (as opposed to ctree builds)
+/editor/java/trans
+/utils
+
+# test files
+/test/parse
+/test/tmp
