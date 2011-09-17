@@ -72,3 +72,14 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
           proposals := <conc> (<Proposals>, <all-keys-GlobalVar>)
         |}
       end
+
+  parse-test:
+    (selected, position, ast, path, project-path) -> None()
+    with
+      <readdir; string-sort> "test/parse";
+      list-loop({filename: ?filename;
+        profile(!filename,
+          !$[test/parse/[filename]];
+          (parse-lua-file <+ debug(!"Fails parsing: "))
+        )
+      })

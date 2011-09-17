@@ -17,4 +17,6 @@ builders
   builder  : "Show abstract syntax (for selection)" = generate-aterm (openeditor) (realtime) (meta) (source)
   builder  : "Show decorated AST (for selection)" = generate-decorated-ast (openeditor) (realtime) (meta)
 
+  builder  : "Parse all Lua files in test/parse" = parse-test (meta)
+
   // on save: generate-java
