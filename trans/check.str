@@ -1,23 +1,10 @@
 module check
 
 imports
-  libstratego-lib
   include/Lua
   lib/editor-common.generated
-  desugar
   globals
   rename
-  rename-loop
-
-rules
-
-  analyze:
-    (ast, path, project-path) -> ast'
-    with
-      ast' := <desugar-top;
-               rename-top;
-               rename-loop-top;
-               globals-top> ast
 
 rules
 

@@ -10,6 +10,7 @@ imports
   desugar
   globals
   rename
+  rename-loop
 
 signature
   constructors
@@ -23,7 +24,7 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
     (ast, path, project-path) -> result
     with
       editor-init;
-      ast' := <analyze>;
+      ast' := <analyze> ast;
       if !ast' => File(_, _) then
         errors   := <collect-all(check-error, conc)> ast';
         warnings := <collect-all(check-warning, conc)> ast';
@@ -33,6 +34,12 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
         // For syntax tests
         result   := (ast', [], [], [])
       end
+
+  analyze =
+    desugar-top;
+    rename-top;
+    rename-loop-top;
+    globals-top
 
   // Prints the AST of a selection.
   generate-aterm:
@@ -68,7 +75,7 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
     where
       if !node => Var(COMPLETION(prefix)) then
         {|Proposals:
-          <analyze> (ast, path, project-path);
+          <desugar-top; rename-top> ast;
           proposals := <conc> (<Proposals>, <all-keys-GlobalVar>)
         |}
       end
