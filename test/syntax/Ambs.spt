@@ -3,6 +3,6 @@ module syntax_Ambs
 
 start symbol Chunk
 
-test double function call [[
-  x = f(y)(z)
-]]
+test double function call [[ x = f(y)(z) ]]
+parse to [[ x = ( (f(y))(z) ) ]]
+
