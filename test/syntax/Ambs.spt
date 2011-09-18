@@ -6,6 +6,9 @@ start symbol Chunk
 test double function call [[ x = f(y)(z) ]]
 parse to [[ x = ( (f(y))(z) ) ]]
 
+test double function call (2) [[ f(x)(y)() ]]
+parse to [[ ( (f(x))(y) )() ]]
+
 test layout after function name [[ f (x) ]]
 parse to [[ f(x); ]]
 // semicolon to resolve ambiguity in testing language (pattern/ParseOutput)

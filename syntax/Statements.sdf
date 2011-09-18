@@ -33,7 +33,7 @@ exports
     VarList "=" ExpList -> Stat {cons("Assignment")}
 
 %% stat ::= functioncall
-    FunctionCall        -> Stat
+    FunctionCall T      -> Stat {ast("<1>")}
 
 %% stat ::= do block end
     "do" Chunk "end"    -> Stat {cons("Block")}
