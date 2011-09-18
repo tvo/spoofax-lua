@@ -69,4 +69,4 @@ rules
   rename: COMPLETION(_) -> <id>
     where
       all-keys-RenameId => proposals;
-      rules( Proposals := proposals )
+      rules( ContentProposals := proposals )

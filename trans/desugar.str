@@ -23,8 +23,11 @@ imports
 
 strategies
 
+  basic-desugar-top =
+    bottomup(try(origin-track-forced(basic-desugar)))
+
   desugar-top =
-    bottomup(try(origin-track-forced(desugar)))
+    bottomup(try(origin-track-forced(basic-desugar <+ desugar)))
 
   // convert [x, y, z] to Field(Field(Var(x), y), z)
   path-to-fields =
@@ -32,43 +35,43 @@ strategies
 
 rules
 
-  desugar:
+  basic-desugar:
     Chunk(stat*, laststat) -> Chunk([stat'*, laststat])
     where
       // last desugaring rule might have generated a list in our list...
       stat'* := <flatten-list> stat*
 
-  desugar:
+  basic-desugar:
     Return(None()) -> Return([])
 
-  desugar:
+  basic-desugar:
     Return(Some(t)) -> Return(t)
 
-  desugar:
+  basic-desugar:
     ArgList(None()) -> []
 
-  desugar:
+  basic-desugar:
     ArgList(Some(t)) -> t
 
-  desugar:
+  basic-desugar:
     ArgTableCons(t) -> [t]
 
-  desugar:
+  basic-desugar:
     ArgString(t) -> [String(t)]
 
-  desugar:
+  basic-desugar:
     ArgRawString(t) -> [RawString(t)]
 
-  desugar:
+  basic-desugar:
     ParList(t*) -> t*
 
-  desugar:
+  basic-desugar:
     VarParList(t*) -> [t*, VarArgs()]
 
-  desugar:
+  basic-desugar:
     TableCons(None()) -> TableCons([])
 
-  desugar:
+  basic-desugar:
     TableCons(Some(FieldList(t*, _))) -> TableCons(<remove-all(is-int)> t*)
 
   // always include optional step size with `for' loops

@@ -90,11 +90,12 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
     where
       <debug(!"Complete: ")> (node, position)
     where
+      proposals := <ContentProposals>
+    <+
       if !node => Var(COMPLETION(prefix)) then
-        {|Proposals:
-          <desugar-top; rename-top> ast;
-          proposals := <conc> (<Proposals>, <all-keys-GlobalVar>)
-        |}
+        <desugar-top; rename-top> ast;
+        proposals := <conc> (<ContentProposals>, <all-keys-GlobalVar>);
+        rules( ContentProposals := proposals )
       end
 
   parse-test:
