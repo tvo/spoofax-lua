@@ -51,10 +51,10 @@ rules
       rules( VarUse : y -> y )
 
   // Scopes
-  rename: x@Chunk(_) -> <rename-scope> x
-  rename: x@ForLoop(_, _, _, _, _) -> <rename-scope> x
-  rename: x@ForEachLoop(_, _, _) -> <rename-scope> x
-  rename: x@Function(_, _) -> <rename-scope> x
+  rename: Chunk(_) -> <rename-scope>
+  rename: ForLoop(_, _, _, _, _) -> <rename-scope>
+  rename: ForEachLoop(_, _, _) -> <rename-scope>
+  rename: Function(_, _) -> <rename-scope>
 
   // Special handling for `repeat ... until exp' loops because
   // the scope of the body includes the loop condition exp.
