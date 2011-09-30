@@ -33,6 +33,14 @@ strategies
   path-to-fields =
     ([y] -> Var(y)) <+ !Field(<init; path-to-fields>, <last>)
 
+  // remove Lua [===[ ... ]===] brackets
+  un-long-bracket =
+    string-as-chars(
+      ?['[' | <init>];         // outer brackets
+      repeat(?['=' | <init>]); // equals signs
+      ?['[' | <init>]          // inner brackets
+    )
+
 rules
 
   basic-desugar:
@@ -57,10 +65,16 @@ rules
     ArgTableCons(t) -> [t]
 
   basic-desugar:
-    ArgString(t) -> [String(t)]
+    ArgString(t) -> [String(<un-double-quote> t)]
 
   basic-desugar:
-    ArgRawString(t) -> [RawString(t)]
+    ArgRawString(t) -> [String(<un-long-bracket> t)]
+
+  basic-desugar:
+    String(t) -> String(<un-double-quote> t)
+
+  basic-desugar:
+    RawString(t) -> String(<un-long-bracket> t)
 
   basic-desugar:
     ParList(t*) -> t*

@@ -25,7 +25,7 @@ test arglist/string [[ f "hi" ]]
 build generate-decorated-ast to FunctionCall(_, [String(_)])
 
 test arglist/rawstring [[[ f [[hi]] ]]]
-build generate-decorated-ast to FunctionCall(_, [RawString(_)])
+build generate-decorated-ast to FunctionCall(_, [String(_)])
 
 test tablecons/none [[ t = {} ]]
 build generate-decorated-ast to Assignment(_, [TableCons([])])
@@ -59,3 +59,21 @@ build generate-decorated-ast to [[ x.y.z = function() end ]]
 
 test local function decl [[ local function x() end ]]
 build generate-decorated-ast to [[ local x; x = function() end ]]
+
+test un-double-quote [[ return "x" ]]
+build generate-decorated-ast to Return([String("x")])
+
+test un-long-bracket (1) [[[ return [[x]] ]]]
+build generate-decorated-ast to Return([String("x")])
+
+test un-long-bracket (2) [[ return [=[x]=] ]]
+build generate-decorated-ast to Return([String("x")])
+
+test un-long-bracket (3) [[ return [=====[x]=====] ]]
+build generate-decorated-ast to Return([String("x")])
+
+test un-double-quote (arg) [[ f "x" ]]
+build generate-decorated-ast to FunctionCall(_, [String("x")])
+
+test un-long-bracket (arg) [[[ f [[x]] ]]]
+build generate-decorated-ast to FunctionCall(_, [String("x")])
