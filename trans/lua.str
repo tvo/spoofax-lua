@@ -88,8 +88,6 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   editor-complete:
     (node, position, ast, path, project-path) -> proposals
     where
-      <debug(!"Complete: ")> (node, position)
-    where
       proposals := <ContentProposals>
     <+
       if !node => Var(COMPLETION(prefix)) then
