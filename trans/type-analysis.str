@@ -139,7 +139,7 @@ rules
     where
       if not(oids := <bagof-ObjectId; ?[_|_]> name) then
         // Yet unknown variable is assumed to be a table.
-        oid := Table(<new>);
+        oid := Table(<new>){"default"};
         oids := [oid];
         rules( ObjectId :+ name -> oid )
       end
@@ -192,7 +192,7 @@ rules
             bagof-ObjectId; ?[_ | _]
           <+
             // If field not known => store it. (with table type)
-            oid := Table(<new>);
+            oid := Table(<new>){"default"};
             rules(
               ObjectId   :+ x -> oid
               TableField :+ tid -> name
