@@ -68,7 +68,9 @@ exports
     "(" Exp ")" -> PrefixExp {bracket}
 
 %% var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
-%% Note: prefixexp is any expression that can act as LHS in assignment
+%% NOTE: Var is any expression that can be the LHS in assignment
+%% NOTE: PrefixExp is any expression that can be the LHS in array indexing,
+%%       field access, function call, ...
     ID                    -> Var {cons("Var")}
     PrefixExp "[" Exp "]" -> Var {cons("Index")}
     PrefixExp "." ID      -> Var {cons("Field")}
