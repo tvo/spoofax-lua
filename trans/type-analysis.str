@@ -36,6 +36,9 @@ ObjectId dynamic rule maps
 - AST elements to their ObjectId
 - Field(ObjectId, String) to its ObjectId
 - Index(ObjectId, String) to its ObjectId
+
+Goal of this type analysis is to calculate for each renamed variable the union
+of all possible types this variable might have.
 */
 
   type-analysis-top =
@@ -56,25 +59,48 @@ rules
 
   assign-oid: LocalVariableDecl(name*, exp*) -> <id>
     with
-      !(name*, exp*);
-      zip({
-        ?(Name(name), exp);
-        <get-oids; put-oids(|name)> exp
-      })
+      <zip(assignment-assign-oid)> (name*, exp*)
 
   assign-oid: Assignment(var*, exp*) -> <id>
     with
-      !(var*, exp*);
-      zip({
-        ?(Var(name), exp);
-        <get-oids; put-oids(|name)> exp
-      <+
-        ?(Field(exp-lhs, name), exp-rhs);
-        oids-rhs := <get-oids> exp-rhs;
-        <get-oids> exp-lhs;
-        filter({tid:
-          ?tid@Table(_);
-          <put-oids(|Field(tid, name))> oids-rhs
+      <zip(assignment-assign-oid)> (var*, exp*)
+
+  // Assignment to a new variable
+  assignment-assign-oid:
+    (Name(name), exp-rhs) -> <id>
+    where
+      <get-oids; put-oids(|name)> exp-rhs
+
+  // Assignment to an existing variable
+  assignment-assign-oid:
+    (Var(name), exp-rhs) -> <id>
+    where
+      <get-oids; put-oids(|name)> exp-rhs
+
+  // Assignment to a field, e.g. `x.y = 1'
+  assignment-assign-oid:
+    (Field(exp-lhs, name), exp-rhs) -> <id>
+    where
+      oids-rhs := <get-oids> exp-rhs;
+      <get-oids> exp-lhs;
+      filter({tid:
+        ?tid@Table(_);
+        <put-oids(|Field(tid, name))> oids-rhs
+      })
+
+  // Assignment to an index, e.g. `x[#x] = 1'
+  assignment-assign-oid:
+    (Index(exp-lhs, exp-index), exp-rhs) -> <id>
+    where
+      oids-index := <get-oids> exp-index;
+      oids-rhs := <get-oids> exp-rhs;
+      <get-oids> exp-lhs;
+      filter({tid:
+        ?tid@Table(_);
+        !oids-index;
+        list-loop({oid-index:
+          ?oid-index;
+          <put-oids(|Index(tid, oid-index))> oids-rhs
         })
       })
 
