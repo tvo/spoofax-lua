@@ -17,15 +17,25 @@
  */
 module Lua-Syntax
 
-imports Lua-Syntax.generated
-
 language
 
   // This file can be used for custom syntax rules.
   //
   // See the imported file for a brief introduction and examples.
 
-  line comment                           : "--"
-  block comment                          : "--[[" * "]]"
+  // Comment constructs:
+  line comment: "--"
+  block comment: "--[[" * "]]"
 
-  indent after : "do" "then" "else" "repeat"
+  // Fences (used for matching,
+  // inserting, indenting brackets):
+  fences: [ ]
+          ( )
+          { }
+
+  // Automatic indent hints
+  // (indent after these tokens):
+  indent after: "do" "then" "else" "repeat"
+
+  // Regular expression for identifiers:
+  identifier lexical: "[A-Za-z0-9_]+"
