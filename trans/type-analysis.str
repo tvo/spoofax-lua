@@ -23,13 +23,13 @@ imports
 
 signature
   constructors
-    Boolean : Boolean
-    Number  : Number
-    String  : String
-    Unknown : Unknown // fields which we know exists, but don't know the type
-    Table   : String -> Table
-    Minus   : Exp * Exp -> Exp
-    Minus   : Exp -> Exp
+    Boolean  : Boolean
+    Number   : Number
+    String   : String
+    Table    : String -> Table
+    Function : String -> Function
+    Minus    : Exp * Exp -> Exp
+    Minus    : Exp -> Exp
 
 strategies
 
@@ -61,10 +61,12 @@ rules
 
   assign-oid: LocalVariableDecl(name*, exp*) -> <id>
     with
+      <alltd(assign-oid)> exp*;
       <zipPad(assignment-assign-oid, !None())> (name*, exp*)
 
   assign-oid: Assignment(var*, exp*) -> <id>
     with
+      <alltd(assign-oid)> exp*;
       <zipPad(assignment-assign-oid, !None())> (var*, exp*)
 
   assign-oid-complete: Field(exp, COMPLETION(_)) -> <get-oids>
@@ -91,10 +93,11 @@ rules
       <get-oids> exp-lhs;
       filter({tid:
         ?tid@Table(_);
-        <put-oids(|Field(tid, name))> oids-rhs
+        <put-oids(|Field(tid, name))> oids-rhs;
+        rules( TableField :+ tid -> name )
       })
 
-  // Assignment to an index, e.g. `x[#x] = 1'
+  // Assignment to an index, e.g. `x[1] = 2'
   assignment-assign-oid:
     (Index(exp-lhs, exp-index), exp-rhs) -> <id>
     where
@@ -124,14 +127,25 @@ rules
 rules
 
   // Error case: more variables than expressions given in assignment.
-  get-oids: None() -> [Unknown()]
+  get-oids: None() -> []
 
   get-oids: Nil()     -> [Nil()]
   get-oids: False()   -> [Boolean()]
   get-oids: True()    -> [Boolean()]
   get-oids: Number(_) -> [Number()]
   get-oids: String(_) -> [String()]
-  get-oids: Var(name) -> <bagof-ObjectId> name
+
+  get-oids: Var(name) -> oids
+    where
+      if not(oids := <bagof-ObjectId; ?[_|_]> name) then
+        // Yet unknown variable is assumed to be a table.
+        oid := Table(<new>);
+        oids := [oid];
+        rules( ObjectId :+ name -> oid )
+      end
+
+  // Used for hover help; not used in the actual type analysis.
+  get-oids: Name(name) -> <bagof-ObjectId> name
 
   // Binary operators with Number() result.
   // FIXME: ignoring operator overloading...
@@ -168,21 +182,22 @@ rules
       if !name => COMPLETION(_) then
         mapconcat(bagof-TableField) => proposals;
         rules( ContentProposals := proposals );
-        oids := [Unknown()]
+        oids := []
       else
-        filter({tid,x:
+        filter({oid,tid,x:
           ?tid@Table(_); // Only tables.
           x := Field(tid, name);
           (
             // If field known => return all known OIDs.
             bagof-ObjectId; ?[_ | _]
           <+
-            // If field not known => store it. (with unknown type)
+            // If field not known => store it. (with table type)
+            oid := Table(<new>);
             rules(
-              ObjectId   :+ x -> Unknown()
+              ObjectId   :+ x -> oid
               TableField :+ tid -> name
             );
-            ![Unknown()]
+            ![oid]
           )
         });
         concat => oids
@@ -197,6 +212,12 @@ rules
         <mapconcat(<bagof-ObjectId> Index(tid, <id>))> oids-index
       });
       concat => oids
+
+  // TODO: implement this
+  // should store parameter list (for completion)
+  get-oids: Function(_, _) -> [Function(<new>)]
+  // should get OIDs that function can return
+  get-oids: FunctionCall(_, _) -> []
 
   get-oids: t@TableCons(field*) -> [tid]
     where
