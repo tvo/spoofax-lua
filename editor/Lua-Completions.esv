@@ -48,4 +48,4 @@ completions
 
   // Semantic (identifier) completion:
   completion proposer                  : editor-complete
-  // completion trigger                   : ":"
+  completion trigger                   : "[.:]"

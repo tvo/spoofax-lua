@@ -28,6 +28,7 @@ imports
   globals
   rename
   rename-loop
+  type-analysis
 
 signature
   constructors
@@ -56,7 +57,8 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
     desugar-top;
     rename-top;
     rename-loop-top;
-    globals-top
+    globals-top;
+    type-analysis-top
 
   // Prints the AST of a selection.
   generate-aterm:
@@ -88,13 +90,17 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   editor-complete:
     (node, position, ast, path, project-path) -> proposals
     where
-      proposals := <ContentProposals>
-    <+
-      if !node => Var(COMPLETION(prefix)) then
-        <desugar-top; rename-top> ast;
-        proposals := <conc> (<ContentProposals>, <all-keys-GlobalVar>);
-        rules( ContentProposals := proposals )
-      end
+    //   proposals := <ContentProposals>
+    // <+
+      <analyze> ast;
+      proposals := <propose-completions> node;
+      rules( ContentProposals := proposals )
+
+  propose-completions:
+    Var(COMPLETION(_)) -> <conc> (<ContentProposals>, <all-keys-GlobalVar>)
+
+  propose-completions:
+    Field(exp, COMPLETION(_)) -> <ContentProposals>
 
   parse-test:
     (selected, position, ast, path, project-path) -> None()

@@ -1,0 +1,147 @@
+/*
+ * Spoofax-Lua: a Lua Eclipse plugin based on Spoofax
+ * Copyright (C) 2011  Tobi Vollebregt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+module type-analysis
+
+imports
+  include/Lua
+  lib/editor-common.generated
+
+signature
+  constructors
+    Boolean : Boolean
+    Number  : Number
+    String  : String
+    Unknown : Unknown // fields which we know exists, but don't know the type
+    Table   : String -> Table
+
+strategies
+
+/*
+ObjectId dynamic rule maps
+- AST elements to their ObjectId
+- Field(ObjectId, String) to its ObjectId
+- Index(ObjectId, String) to its ObjectId
+*/
+
+  type-analysis-top =
+    with(
+      alltd(assign-oid);
+      alltd(assign-oid-complete)
+      // DEBUG
+      ;<debug> "=== ObjectId ===";
+      all-keys-ObjectId;
+      list-loop(<debug(!"ObjectId: ")> (<id>, <bagof-ObjectId>));
+      <debug> "=== TableField ===";
+      all-keys-TableField;
+      list-loop(<debug(!"TableField: ")> (<id>, <bagof-TableField>))
+      // END DEBUG
+    )
+
+rules
+
+  assign-oid: LocalVariableDecl(name*, exp*) -> <id>
+    with
+      !(name*, exp*);
+      zip({
+        ?(Name(name), exp);
+        <get-oids; put-oids(|name)> exp
+      })
+
+  assign-oid: Assignment(var*, exp*) -> <id>
+    with
+      !(var*, exp*);
+      zip({
+        ?(Var(name), exp);
+        <get-oids; put-oids(|name)> exp
+      <+
+        ?(Field(exp-lhs, name), exp-rhs);
+        oids-rhs := <get-oids> exp-rhs;
+        <get-oids> exp-lhs;
+        filter({tid:
+          ?tid@Table(_);
+          <put-oids(|Field(tid, name))> oids-rhs
+        })
+      })
+
+  assign-oid-complete: Field(exp, COMPLETION(_)) -> <get-oids>
+
+  put-oids(|t) =
+    where( present-oids := <bagof-ObjectId> t );
+    list-loop({oid: ?oid;
+      (  <one(?oid)> present-oids
+      <+ rules( ObjectId :+ t -> oid )  )
+    })
+
+  get-oids: Number(_) -> [Number()]
+  get-oids: String(_) -> [String()]
+  get-oids: False() -> [Boolean()]
+  get-oids: True()  -> [Boolean()]
+  get-oids: Var(name) -> <bagof-ObjectId> name
+
+  get-oids: t@Field(exp, name) -> oids
+    where
+      <get-oids> exp;
+      if !name => COMPLETION(_) then
+        mapconcat(bagof-TableField) => proposals;
+        rules( ContentProposals := proposals );
+        oids := [Unknown()]
+      else
+        filter({tid,x:
+          ?tid@Table(_); // Only tables are eligible.
+          x := Field(tid, name);
+          (
+            // If field known => return all known OIDs.
+            bagof-ObjectId; ?[_ | _]
+          <+
+            // If field not known => store it. (with unknown type)
+            rules(
+              ObjectId   :+ x -> Unknown()
+              TableField :+ tid -> name
+            );
+            ![Unknown()]
+          )
+        });
+        concat => oids
+      end
+
+  get-oids: t@TableCons(field*) -> [tid]
+    where
+      if not(ObjectId => tid) then
+        tid := Table(<new>);
+        rules( ObjectId :+ t -> tid );
+        <list-loop(put-field(|tid))> field*
+      end
+
+  put-field(|tid): ArrayField(exp) -> <id>
+    where
+      <get-oids> exp;
+      // When table TID is indexed using a number, it might return OIDs.
+      // NOTE: all indices are in the same equivalence class (number).
+      put-oids(|Index(tid, Number()))
+
+  put-field(|tid): KeyValueField(name, exp) -> <id>
+    where
+      <get-oids> exp;
+      // When table TID is indexed using a string, it might return OIDs.
+      put-oids(|Index(tid, String()));
+      // When field NAME in table TID is accessed, it might return OIDs.
+      put-oids(|Field(tid, name));
+      // Table TID has field NAME, which stores OID.
+      rules( TableField :+ tid -> name )
+
+  put-field(|tid): CalculatedField(_, _) -> <id>
