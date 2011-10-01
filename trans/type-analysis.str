@@ -28,6 +28,8 @@ signature
     String  : String
     Unknown : Unknown // fields which we know exists, but don't know the type
     Table   : String -> Table
+    Minus   : Exp * Exp -> Exp
+    Minus   : Exp -> Exp
 
 strategies
 
@@ -64,6 +66,10 @@ rules
   assign-oid: Assignment(var*, exp*) -> <id>
     with
       <zipPad(assignment-assign-oid, !None())> (var*, exp*)
+
+  assign-oid-complete: Field(exp, COMPLETION(_)) -> <get-oids>
+
+rules
 
   // Assignment to a new variable
   assignment-assign-oid:
@@ -108,11 +114,6 @@ rules
   assignment-assign-oid:
     (None(), exp-rhs) -> <id>
 
-  // Error case: more variables than expressions given in assignment.
-  get-oids: None() -> [Unknown()]
-
-  assign-oid-complete: Field(exp, COMPLETION(_)) -> <get-oids>
-
   put-oids(|t) =
     where( present-oids := <bagof-ObjectId> t );
     list-loop({oid: ?oid;
@@ -120,11 +121,46 @@ rules
       <+ rules( ObjectId :+ t -> oid )  )
     })
 
+rules
+
+  // Error case: more variables than expressions given in assignment.
+  get-oids: None() -> [Unknown()]
+
+  get-oids: Nil()     -> [Nil()]
+  get-oids: False()   -> [Boolean()]
+  get-oids: True()    -> [Boolean()]
   get-oids: Number(_) -> [Number()]
   get-oids: String(_) -> [String()]
-  get-oids: False() -> [Boolean()]
-  get-oids: True()  -> [Boolean()]
   get-oids: Var(name) -> <bagof-ObjectId> name
+
+  // Binary operators with Number() result.
+  // FIXME: ignoring operator overloading...
+  get-oids: Plus  (_, _) -> [Number()]
+  get-oids: Minus (_, _) -> [Number()]
+  get-oids: Times (_, _) -> [Number()]
+  get-oids: Divide(_, _) -> [Number()]
+  get-oids: Power (_, _) -> [Number()]
+  get-oids: Modulo(_, _) -> [Number()]
+
+  // Binary operators with String() result.
+  get-oids: Concat(_, _) -> [String()]
+
+  // Binary operators with Boolean() result.
+  get-oids: LowerThan  (_, _) -> [Boolean()]
+  get-oids: GreaterThan(_, _) -> [Boolean()]
+  get-oids: LowerThanOrEqual  (_, _) -> [Boolean()]
+  get-oids: GreaterThanOrEqual(_, _) -> [Boolean()]
+  get-oids: Equal   (_, _) -> [Boolean()]
+  get-oids: NotEqual(_, _) -> [Boolean()]
+
+  // And and Or return one of their arguments.
+  get-oids: And(x, y) -> <conc> (<get-oids> x, <get-oids> y)
+  get-oids: Or (x, y) -> <conc> (<get-oids> x, <get-oids> y)
+
+  // Unary operators.
+  get-oids: Minus(_) -> [Number()]
+  get-oids: Not(_) -> [Boolean()]
+  get-oids: Length(_) -> [Number()]
 
   get-oids: t@Field(exp, name) -> oids
     where
@@ -135,7 +171,7 @@ rules
         oids := [Unknown()]
       else
         filter({tid,x:
-          ?tid@Table(_); // Only tables are eligible.
+          ?tid@Table(_); // Only tables.
           x := Field(tid, name);
           (
             // If field known => return all known OIDs.
@@ -151,6 +187,16 @@ rules
         });
         concat => oids
       end
+
+  get-oids: t@Index(exp, exp-index) -> oids
+    where
+      oids-index := <get-oids> exp-index;
+      <get-oids> exp;
+      filter({tid:
+        ?tid@Table(_); // Only tables.
+        <mapconcat(<bagof-ObjectId> Index(tid, <id>))> oids-index
+      });
+      concat => oids
 
   get-oids: t@TableCons(field*) -> [tid]
     where
