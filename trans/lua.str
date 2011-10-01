@@ -102,7 +102,8 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   pp-type: Table(_){} -> "table"
     where not(TableField)
 
-  pp-type: Table(_) -> $[table { [<bagof-TableField; separate-by(|", ")>] }]
+  pp-type: Table(_) ->
+    $[table { [<bagof-TableField; string-sort; separate-by(|", ")>] }]
     where TableField
 
   // Completes an identifier when the user presses control-space
