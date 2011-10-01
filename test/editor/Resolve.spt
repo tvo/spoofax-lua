@@ -69,3 +69,9 @@ test repeat loop condition [[
   until [[x]]
 ]]
 resolve #4 to #2
+
+test shadowing [[
+  local [[x]]
+  local x = [[x]]
+]]
+resolve #5 to #2

@@ -36,6 +36,12 @@ strategies
 rules
 
   // Variable declaration
+  rename: LocalVariableDecl(name*, exp*) -> LocalVariableDecl(name'*, exp'*)
+    where
+      // NOTE: In `local x; local x = x', the third x refers to the first x!
+      //       Therefore, process exp* first and only then name*.
+      (exp'*, name'*) := <rename-top'> (exp*, name*)
+
   rename: d@Name(x) -> Name(y)
     where
       y := x{<new>};
