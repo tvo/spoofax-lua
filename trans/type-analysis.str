@@ -59,11 +59,11 @@ rules
 
   assign-oid: LocalVariableDecl(name*, exp*) -> <id>
     with
-      <zip(assignment-assign-oid)> (name*, exp*)
+      <zipPad(assignment-assign-oid, !None())> (name*, exp*)
 
   assign-oid: Assignment(var*, exp*) -> <id>
     with
-      <zip(assignment-assign-oid)> (var*, exp*)
+      <zipPad(assignment-assign-oid, !None())> (var*, exp*)
 
   // Assignment to a new variable
   assignment-assign-oid:
@@ -103,6 +103,13 @@ rules
           <put-oids(|Index(tid, oid-index))> oids-rhs
         })
       })
+
+  // Error case: more expressions than variables given in assignment.
+  assignment-assign-oid:
+    (None(), exp-rhs) -> <id>
+
+  // Error case: more variables than expressions given in assignment.
+  get-oids: None() -> [Unknown()]
 
   assign-oid-complete: Field(exp, COMPLETION(_)) -> <get-oids>
 
