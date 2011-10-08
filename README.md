@@ -18,6 +18,7 @@ After this `.lua` files should open in this plugin.
 * Completion and reference resolving of:
   * global variables that are assigned anywhere in the file
   * local variables in the current scope
+* Completion of table fields
 * Warns about:
   * incorrect placement of `break` statements
   * use of unassigned globals
@@ -29,8 +30,8 @@ After this `.lua` files should open in this plugin.
 
 ## Missing features / To do
 
+* Fix analysis when varargs are present
 * Completion of function arguments
-* Completion of table fields
 * Checks for obvious (type) errors
 * Multi-file analysis (e.g., [dofile](http://www.lua.org/pil/8.html), [require](http://www.lua.org/pil/8.1.html))
 * Debugging (not planned)
