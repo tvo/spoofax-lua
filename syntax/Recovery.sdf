@@ -26,7 +26,7 @@ exports
     LastStat -> Stat {recover}
 
     %% Helps content completion
-    PrefixExp T -> Stat   {cons("WATER")}
+    PrefixExp T -> Stat   {cons("WATER"), recover}
     COMPLETION  -> ElseIf {cons("WATER")}
     COMPLETION  -> Else   {cons("WATER")}
     PrefixExp "." COMPLETION -> Var {cons("Field")}
