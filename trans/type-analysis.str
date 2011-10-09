@@ -135,6 +135,9 @@ rules
   get-oids: Number(_) -> [Number()]
   get-oids: String(_) -> [String()]
 
+  // FIXME: Be smarter here...
+  get-oids: VarArgs() -> []
+
   get-oids: Var(name) -> oids
     where
       if not(oids := <bagof-ObjectId; ?[_|_]> name) then
