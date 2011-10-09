@@ -20,6 +20,7 @@ module type-analysis
 imports
   include/Lua
   lib/editor-common.generated
+  lua // FIXME: get rid of circular import
 
 signature
   constructors
@@ -70,6 +71,11 @@ rules
       <zipPad(assignment-assign-oid, !None())> (var*, exp*)
 
   assign-oid-complete: Field(exp, COMPLETION(_)) -> <get-oids>
+
+  assign-oid-complete: MethodCall(exp, c@COMPLETION(_), _) -> <get-oids> Field(exp, c)
+
+  // Recovery variant
+  assign-oid-complete: MethodCall(exp, c@COMPLETION(_)) -> <get-oids> Field(exp, c)
 
 rules
 
@@ -183,7 +189,11 @@ rules
     where
       <get-oids> exp;
       if !name => COMPLETION(_) then
-        mapconcat(bagof-TableField) => proposals;
+        mapconcat({
+          ?oid;
+          bagof-TableField;
+          map(try(<pp-function> (<id>, <ObjectId> Field(oid, <id>))))
+        }) => proposals;
         rules( ContentProposals := proposals );
         oids := []
       else

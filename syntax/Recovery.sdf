@@ -29,3 +29,5 @@ exports
     PrefixExp T -> Stat   {cons("WATER"), avoid}
     COMPLETION  -> ElseIf {cons("WATER")}
     COMPLETION  -> Else   {cons("WATER")}
+
+    PrefixExp ":" COMPLETION -> FunctionCall {cons("MethodCall"), avoid}

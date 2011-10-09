@@ -97,7 +97,6 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   pp-type: Boolean() -> "boolean"
   pp-type: Number() -> "number"
   pp-type: String() -> "string"
-  pp-type: Function(_, _) -> "function"
 
   pp-type: Table(_){} -> "table"
     where not(TableField)
@@ -105,6 +104,17 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   pp-type: Table(_) ->
     $[table { [<bagof-TableField; string-sort; separate-by(|", ")>] }]
     where TableField
+
+  pp-type: Function(_, _) -> <pp-function; concat-strings> ("function ", <id>)
+
+  // NOTE: returns list of strings
+  pp-function: (name, Function(_, arg*)) -> [name, "(", arg'*, ")"]
+    where
+      debug;
+      arg'* := <map(?Name(<id>) + (VarArgs() -> "..."));
+                separate-by(|", ")> arg*
+
+  augment-functions = map(try(<pp-function> (<id>, <ObjectId>)))
 
   // Completes an identifier when the user presses control-space
   // (the completion identifier in the AST provides additional context information)
@@ -119,21 +129,19 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
 
   propose-completions:
     Var(COMPLETION(_)) -> result
-    with
+    where
       <conc> (<ContentProposals>, <all-keys-GlobalVar>);
-      // Go through all proposals, and check if it is a function.
-      // If so, fetch and pretty print the parameter names.
-      map(try({
-        ?name;
-        ObjectId;
-        ?Function(_, <id>);
-        map(?Name(<id>) + (VarArgs() -> "..."));
-        separate-by(|", ") => args*;
-        ![name, "(", args*, ")"]
-      })) => result
+      augment-functions => result
 
   propose-completions:
-    Field(exp, COMPLETION(_)) -> <ContentProposals>
+    Field(_, COMPLETION(_)) -> <ContentProposals>
+
+  propose-completions:
+    MethodCall(_, COMPLETION(_), _) -> <ContentProposals>
+
+  // Recovery variant
+  propose-completions:
+    MethodCall(_, COMPLETION(_)) -> <ContentProposals>
 
   parse-test:
     (selected, position, ast, path, project-path) -> None()
