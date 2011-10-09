@@ -27,7 +27,7 @@ signature
     Number   : Number
     String   : String
     Table    : String -> Table
-    Function : String -> Function
+    Function : String * List(String) -> Function
     Minus    : Exp * Exp -> Exp
     Minus    : Exp -> Exp
 
@@ -216,9 +216,9 @@ rules
       });
       concat => oids
 
-  // TODO: implement this
-  // should store parameter list (for completion)
-  get-oids: Function(_, _) -> [Function(<new>)]
+  // Parameter list is stored for completion.
+  get-oids: Function(names, _) -> [Function(<new>, names)]
+
   // should get OIDs that function can return
   get-oids: FunctionCall(_, _) -> []
 

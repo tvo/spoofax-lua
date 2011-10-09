@@ -97,7 +97,7 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   pp-type: Boolean() -> "boolean"
   pp-type: Number() -> "number"
   pp-type: String() -> "string"
-  pp-type: Function(_) -> "function"
+  pp-type: Function(_, _) -> "function"
 
   pp-type: Table(_){} -> "table"
     where not(TableField)
@@ -118,7 +118,19 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
       rules( ContentProposals := proposals )
 
   propose-completions:
-    Var(COMPLETION(_)) -> <conc> (<ContentProposals>, <all-keys-GlobalVar>)
+    Var(COMPLETION(_)) -> result
+    with
+      <conc> (<ContentProposals>, <all-keys-GlobalVar>);
+      // Go through all proposals, and check if it is a function.
+      // If so, fetch and pretty print the parameter names.
+      map(try({
+        ?name;
+        ObjectId;
+        ?Function(_, <id>);
+        map(?Name(<id>) + (VarArgs() -> "..."));
+        separate-by(|", ") => args*;
+        ![name, "(", args*, ")"]
+      })) => result
 
   propose-completions:
     Field(exp, COMPLETION(_)) -> <ContentProposals>
