@@ -57,4 +57,4 @@ rules
   globals:
     Var(x{}) -> <id>
     where
-      rules( VarUse : x -> x )
+      rules( GlobalVarUse : x -> x )

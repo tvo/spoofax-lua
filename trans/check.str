@@ -51,7 +51,7 @@ rules
     d@ Var(x{}) -> (<id>, $[Unused global [x]])
     where
       <GlobalVarDef> x; ?d; // first assignment?
-      not(<VarUse> x)    // ever used?
+      not(<GlobalVarUse> x)    // ever used?
 
   check-warning:
     Name(x) -> (<id>, $[Unused local [x]])
