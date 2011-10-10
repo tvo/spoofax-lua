@@ -131,7 +131,7 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   propose-completions:
     Var(COMPLETION(_)) -> result
     where
-      <conc> (<ContentProposals>, <all-keys-GlobalVarDef>);
+      <concat> [<ContentProposals>, <all-keys-GlobalVarDef>, <all-keys-GlobalVarUse>];
       map(try(<pp-function> (<id>, <ObjectId>))) => result
 
   propose-completions:
