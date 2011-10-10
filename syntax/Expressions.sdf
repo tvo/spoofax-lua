@@ -26,7 +26,7 @@ exports
 
 %% exp ::= nil | false | true | Number | String | `...´ |
 %%         prefixexp | tableconstructor
-    "nil"         -> Exp {cons("Nil")}
+    "nil"         -> Exp {cons("LuaNil")}
     "false"       -> Exp {cons("False")}
     "true"        -> Exp {cons("True")}
     NUMBER        -> Exp {cons("Number")}
