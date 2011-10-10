@@ -4,7 +4,7 @@ module analyze_Types
 start symbol Chunk
 
 test nil [[ local [[u]] = nil ]]
-build test-type-analysis to [LuaNil]
+build test-type-analysis to [Null]
 
 test boolean [[ local [[u]] = true ]]
 build test-type-analysis to [Boolean]

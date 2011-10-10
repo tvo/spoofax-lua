@@ -148,7 +148,7 @@ rules
   // Error case: more variables than expressions given in assignment.
   get-oids: None() -> []
 
-  get-oids: LuaNil()  -> [LuaNil()]
+  get-oids: Null()    -> [Null()]
   get-oids: False()   -> [Boolean()]
   get-oids: True()    -> [Boolean()]
   get-oids: Number(_) -> [Number()]

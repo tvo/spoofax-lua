@@ -26,7 +26,7 @@ exports
 
 %% exp ::= nil | false | true | Number | String | `...´ |
 %%         prefixexp | tableconstructor
-    "nil"         -> Exp {cons("LuaNil")}
+    "nil"         -> Exp {cons("Null")} %% Nil has special meaning in Stratego
     "false"       -> Exp {cons("False")}
     "true"        -> Exp {cons("True")}
     NUMBER        -> Exp {cons("Number")}

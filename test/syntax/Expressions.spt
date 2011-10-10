@@ -10,7 +10,7 @@ test var/field [[ x.y  ]] parse to Field(Var("x"), "y")
 
 // exp ::=  nil | false | true | Number | String | `...´ | function |
 //      prefixexp | tableconstructor | exp binop exp | unop exp
-test exp/nil    [[ nil   ]] parse to Nil
+test exp/nil    [[ nil   ]] parse to Null
 test exp/false  [[ false ]] parse to False
 test exp/true   [[ true  ]] parse to True
 test exp/Number [[ 56.78 ]] parse to Number(_)
