@@ -36,20 +36,26 @@ build generate-decorated-ast to Assignment(_, [TableCons([_,_])])
 test for loop without step [[ for i=1,10 do end ]]
 build generate-decorated-ast to [[ for i=1,10,1 do end ]]
 
+// Method calls used to be desugared to function calls,
+// but this conflicted with completion so it has been removed.
+
 test method call/nothing [[ x:z() ]]
-build generate-decorated-ast to [[ x.z(x) ]]
+build generate-decorated-ast to [[ x:z() ]]
 
 test method call/explist [[ x:z(y) ]]
-build generate-decorated-ast to [[ x.z(x, y) ]]
+build generate-decorated-ast to [[ x:z(y) ]]
 
 test method call/tablecons [[ x:z{} ]]
-build generate-decorated-ast to [[ x.z(x, {}) ]]
+build generate-decorated-ast to [[ x:z({}) ]]
 
 test method call/string [[ x:z "hi" ]]
-build generate-decorated-ast to [[ x.z(x, "hi") ]]
+build generate-decorated-ast to [[ x:z("hi") ]]
 
 test method call/rawstring [[[ x:z [[hi]] ]]]
-build generate-decorated-ast to [[[ x.z(x, [[hi]]) ]]]
+build generate-decorated-ast to [[[ x:z([[hi]]) ]]]
+
+test incomplete method call [[ x:CONTENTCOMPLETE1 ]]
+build generate-decorated-ast to [[ x:CONTENTCOMPLETE1() ]]
 
 test method decl [[ function x:z() end ]]
 build generate-decorated-ast to [[ function x.z(self) end ]]

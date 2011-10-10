@@ -11,4 +11,12 @@ parse to [[ ( (f(x))(y) )() ]]
 
 test layout after function name [[ f (x) ]]
 parse to [[ f(x); ]]
-// semicolon to resolve ambiguity in testing language (pattern/ParseOutput)
+// Semicolon to resolve ambiguity in testing language (pattern/ParseOutput)
+
+// For completion ...
+test method call recovery (1) [[ x:CONTENTCOMPLETE1 ]]
+test method call recovery (2) [[ x:CONTENTCOMPLETE1() ]]
+test method call recovery (3) [[ u = x:CONTENTCOMPLETE1 ]]
+test method call recovery (4) [[ u = (x:CONTENTCOMPLETE1) ]]
+test method call recovery (5) [[ u = x:CONTENTCOMPLETE1() ]]
+test method call recovery (6) [[ u = (x:CONTENTCOMPLETE1()) ]]

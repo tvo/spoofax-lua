@@ -107,14 +107,15 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
 
   pp-type: Function(_, _) -> <pp-function; concat-strings> ("function ", <id>)
 
-  // NOTE: returns list of strings
+  // Returns list of strings
   pp-function: (name, Function(_, arg*)) -> [name, "(", arg'*, ")"]
     where
-      debug;
       arg'* := <map(?Name(<id>) + (VarArgs() -> "..."));
                 separate-by(|", ")> arg*
 
-  augment-functions = map(try(<pp-function> (<id>, <ObjectId>)))
+  // Removes the first (self) argument, and invokes pp-function.
+  pp-method: (name, Function(oid, [_ | arg*])) ->
+    <pp-function> (name, Function(oid, arg*))
 
   // Completes an identifier when the user presses control-space
   // (the completion identifier in the AST provides additional context information)
@@ -131,7 +132,7 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
     Var(COMPLETION(_)) -> result
     where
       <conc> (<ContentProposals>, <all-keys-GlobalVar>);
-      augment-functions => result
+      map(try(<pp-function> (<id>, <ObjectId>))) => result
 
   propose-completions:
     Field(_, COMPLETION(_)) -> <ContentProposals>

@@ -30,4 +30,8 @@ exports
     COMPLETION  -> ElseIf {cons("WATER")}
     COMPLETION  -> Else   {cons("WATER")}
 
-    PrefixExp ":" COMPLETION -> FunctionCall {cons("MethodCall"), avoid}
+    %% Not convertable to PrefixExp, like FunctionCall, because that would make
+    %% this production ambiguous followed by an argument list in the input.
+    PrefixExp ":" COMPLETION -> FunctionCallRecover {cons("MethodCall")}
+    FunctionCallRecover -> Exp
+    FunctionCallRecover -> Stat

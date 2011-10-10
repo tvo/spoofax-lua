@@ -23,9 +23,6 @@ imports
 
 strategies
 
-  basic-desugar-top =
-    bottomup(try(origin-track-forced(basic-desugar)))
-
   desugar-top =
     bottomup(try(origin-track-forced(basic-desugar <+ desugar)))
 
@@ -88,16 +85,17 @@ rules
   basic-desugar:
     TableCons(Some(FieldList(t*, _))) -> TableCons(<remove-all(is-int)> t*)
 
-  // always include optional step size with `for' loops
+  // See Recovery.sdf
+  basic-desugar:
+    MethodCall(exp, name) -> MethodCall(exp, name, [])
+
+  // Always include optional step size with `for' loops
   desugar:
     ForLoop(a, b, c, d) -> ForLoop(a, b, c, Number("1"), d)
 
-  // `x:z()' is sugar for `x.z(x)'
-  desugar:
-    MethodCall(path, name, args) -> FunctionCall(path', args')
-    where
-      path' := Field(path, name);
-      args' := <conc> ([path], args)
+  // `x:z()' is sugar for `x.z(x)', but this conflicts with completion,
+  // because we need to know whether a particular call site is a normal
+  // function call or a method call later on...
 
   // `function x:z()...end' is sugar for `function x.z(self)...end'
   desugar:

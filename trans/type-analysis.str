@@ -58,6 +58,8 @@ of all possible types this variable might have.
       // END DEBUG
     )
 
+  is-not-empty = ?[_|_]
+
 rules
 
   assign-oid: LocalVariableDecl(name*, exp*) -> <id>
@@ -72,10 +74,7 @@ rules
 
   assign-oid-complete: Field(exp, COMPLETION(_)) -> <get-oids>
 
-  assign-oid-complete: MethodCall(exp, c@COMPLETION(_), _) -> <get-oids> Field(exp, c)
-
-  // Recovery variant
-  assign-oid-complete: MethodCall(exp, c@COMPLETION(_)) -> <get-oids> Field(exp, c)
+  assign-oid-complete: MethodCall(exp, c@COMPLETION(_), _) -> <get-oids>
 
 rules
 
@@ -146,7 +145,7 @@ rules
 
   get-oids: Var(name) -> oids
     where
-      if not(oids := <bagof-ObjectId; ?[_|_]> name) then
+      if not(oids := <bagof-ObjectId; is-not-empty> name) then
         // Yet unknown variable is assumed to be a table.
         oid := Table(<new>){"default"};
         oids := [oid];
@@ -185,36 +184,48 @@ rules
   get-oids: Not(_) -> [Boolean()]
   get-oids: Length(_) -> [Number()]
 
-  get-oids: t@Field(exp, name) -> oids
+  get-oids: Field(exp, COMPLETION(_)) -> []
     where
       <get-oids> exp;
-      if !name => COMPLETION(_) then
-        mapconcat({
-          ?oid;
-          bagof-TableField;
-          map(try(<pp-function> (<id>, <ObjectId> Field(oid, <id>))))
-        }) => proposals;
-        rules( ContentProposals := proposals );
-        oids := []
-      else
-        filter({oid,tid,x:
-          ?tid@Table(_); // Only tables.
-          x := Field(tid, name);
-          (
-            // If field known => return all known OIDs.
-            bagof-ObjectId; ?[_ | _]
-          <+
-            // If field not known => store it. (with table type)
-            oid := Table(<new>){"default"};
-            rules(
-              ObjectId   :+ x -> oid
-              TableField :+ tid -> name
-            );
-            ![oid]
-          )
-        });
-        concat => oids
-      end
+      mapconcat({
+        ?oid;
+        bagof-TableField;
+        map(try(<pp-function> (<id>, <ObjectId> Field(oid, <id>))))
+      }) => proposals;
+      rules( ContentProposals := proposals )
+
+  get-oids: t@Field(exp, name) -> oids
+    where
+      <is-string> name
+    where
+      <get-oids> exp;
+      filter({oid,tid,x:
+        ?tid@Table(_); // Only tables.
+        x := Field(tid, name);
+        (
+          // If field known => return all known OIDs.
+          bagof-ObjectId; is-not-empty
+        <+
+          // If field not known => store it. (with table type)
+          oid := Table(<new>){"default"};
+          rules(
+            ObjectId   :+ x -> oid
+            TableField :+ tid -> name
+          );
+          ![oid]
+        )
+      });
+      concat => oids
+
+  get-oids: MethodCall(exp, COMPLETION(_), _) -> []
+    where
+      <get-oids> exp;
+      mapconcat({
+        ?oid;
+        bagof-TableField;
+        map(try(<pp-method> (<id>, <ObjectId> Field(oid, <id>))))
+      }) => proposals;
+      rules( ContentProposals := proposals )
 
   get-oids: t@Index(exp, exp-index) -> oids
     where
@@ -229,8 +240,9 @@ rules
   // Parameter list is stored for completion.
   get-oids: Function(names, _) -> [Function(<new>, names)]
 
-  // should get OIDs that function can return
+  // FIXME: Should get OIDs that function/method can return
   get-oids: FunctionCall(_, _) -> []
+  get-oids: MethodCall(_, _, _) -> []
 
   get-oids: t@TableCons(field*) -> [tid]
     where
