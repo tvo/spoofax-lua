@@ -81,4 +81,6 @@ rules
 
   // Give each table constructor a unique name,
   // to be able to distinguish them during type analysis.
-  rename: TableCons(_) -> <id>{<new>}
+  rename: TableCons(x) -> TableCons(y){<new>}
+    where
+      y := <rename-top'> x
