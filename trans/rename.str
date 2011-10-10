@@ -78,3 +78,7 @@ rules
       //       the type of the names after type analysis.
       all-keys-RenameId; map(RenameId) => proposals;
       rules( ContentProposals := proposals )
+
+  // Give each table constructor a unique name,
+  // to be able to distinguish them during type analysis.
+  rename: TableCons(_) -> <id>{<new>}

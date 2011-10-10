@@ -53,6 +53,7 @@ of all possible types this variable might have.
       try(?Var(<id>));
       try(\MethodName([table],field) -> Field(<ObjectId> table, field)\);
       bagof-ObjectId;
+      // try(filter(not(?_{"default"})); is-not-empty);
       map(try(
         \Table(_) -> Table(<bagof-TableField>)\
       + \Function(fid, name*) -> Function(fid, <map(?Name(<strip-annos>))> name*)\
@@ -60,7 +61,7 @@ of all possible types this variable might have.
 
   type-analysis-top =
     with(
-      alltd(assign-oid);
+      assign-oid-top;
       alltd(assign-oid-complete)
       // DEBUG
       ;<debug> "=== ObjectId ===";
@@ -72,25 +73,86 @@ of all possible types this variable might have.
       // END DEBUG
     )
 
+  is-empty = ?[]
   is-not-empty = ?[_|_]
 
-rules
+rules // Helpers
+
+  // Assign all OIDs in current term (list) to the key T.
+  put-oids(|t) =
+    where( present-oids := <bagof-ObjectId> t );
+    list-loop({oid: ?oid;
+      (  <one(?oid)> present-oids
+      <+ rules( ObjectId :+ t -> oid )  )
+    })
+
+  // Assign all OIDs of RHS to field NAME of all table OIDs in LHS.
+  put-field(|exp-lhs, name, oids-rhs) =
+    <get-oids> exp-lhs;
+    list-loop(try({tid:
+      ?tid@Table(_); // Only tables.
+      <put-oids(|Field(tid, name))> oids-rhs;
+      rules( TableField :+ tid -> name )
+    }))
+
+  put-index(|exp-lhs, exp-index, oids-rhs) =
+    oids-index := <get-oids> exp-index;
+    <get-oids> exp-lhs;
+    list-loop(try({tid:
+      ?tid@Table(_);
+      !oids-index;
+      list-loop({oid-index:
+        ?oid-index;
+        <put-oids(|Index(tid, oid-index))> oids-rhs
+      })
+    }))
+
+rules // Generic
+
+  assign-oid-top = alltd(assign-oid)
+
+  assign-oid: Var(name) -> <id>
+    with
+      if <bagof-ObjectId; is-empty> name then
+        // Yet unknown variable is assumed to be a table.
+        oid := Table(<new>){"default"};
+        rules( ObjectId :+ name -> oid )
+      end
+
+  assign-oid: Field(exp-lhs, name) -> <id>
+    where
+      <is-string> name // Exclude COMPLETION(_) node
+    with
+      <assign-oid-top> exp-lhs;
+      // Yet unknown field is assumed to be a table.
+      put-field(|exp-lhs, name, [Table(<new>){"default"}])
+
+  assign-oid: MethodCall(exp-lhs, name, arg*) -> <id>
+    where
+      <is-string> name // Exclude COMPLETION(_) node
+    where
+      <assign-oid-top> exp-lhs;
+      // Yet unknown field is assumed to be a function.
+      put-field(|exp-lhs, name, [Function(<new>, [Name("self")]){"default"}])
+
+  assign-oid: Index(exp-lhs, exp-index) -> <id>
+    with
+      <assign-oid-top> exp-lhs;
+      <assign-oid-top> exp-index;
+      put-index(|exp-lhs, exp-index, [Table(<new>){"default"}])
+
+rules // Assignments
 
   assign-oid: LocalVariableDecl(name*, exp*) -> <id>
     with
-      <alltd(assign-oid)> exp*;
+      <assign-oid-top> exp*;
       <zipPad(assignment-assign-oid, !None())> (name*, exp*)
 
   assign-oid: Assignment(var*, exp*) -> <id>
     with
-      <alltd(assign-oid)> exp*;
+      // assign-oid-top for var* is called selectively in assignment-assign-oid
+      <assign-oid-top> exp*;
       <zipPad(assignment-assign-oid, !None())> (var*, exp*)
-
-  assign-oid-complete: Field(exp, COMPLETION(_)) -> <get-oids>
-
-  assign-oid-complete: MethodCall(exp, c@COMPLETION(_), _) -> <get-oids>
-
-rules
 
   // Assignment to a new variable
   assignment-assign-oid:
@@ -108,42 +170,71 @@ rules
   assignment-assign-oid:
     (Field(exp-lhs, name), exp-rhs) -> <id>
     where
-      oids-rhs := <get-oids> exp-rhs;
-      <get-oids> exp-lhs;
-      filter({tid:
-        ?tid@Table(_);
-        <put-oids(|Field(tid, name))> oids-rhs;
-        rules( TableField :+ tid -> name )
-      })
+      <assign-oid-top> exp-lhs;
+      // Set all possible OIDs of the RHS to
+      // the NAME field of all tables on the LHS.
+      put-field(|exp-lhs, name, <get-oids> exp-rhs)
 
   // Assignment to an index, e.g. `x[1] = 2'
   assignment-assign-oid:
     (Index(exp-lhs, exp-index), exp-rhs) -> <id>
     where
-      oids-index := <get-oids> exp-index;
-      oids-rhs := <get-oids> exp-rhs;
-      <get-oids> exp-lhs;
-      filter({tid:
-        ?tid@Table(_);
-        !oids-index;
-        list-loop({oid-index:
-          ?oid-index;
-          <put-oids(|Index(tid, oid-index))> oids-rhs
-        })
-      })
+      <assign-oid-top> exp-lhs;
+      <assign-oid-top> exp-index;
+      put-index(|exp-lhs, exp-index, <get-oids> exp-rhs)
 
   // Error case: more expressions than variables given in assignment.
   assignment-assign-oid:
     (None(), exp-rhs) -> <id>
 
-  put-oids(|t) =
-    where( present-oids := <bagof-ObjectId> t );
-    list-loop({oid: ?oid;
-      (  <one(?oid)> present-oids
-      <+ rules( ObjectId :+ t -> oid )  )
-    })
+rules // Table Constructors
 
-rules
+  assign-oid: TableCons(field*){a} -> <id>
+    with
+      <list-loop(put-field(|Table(a)))> field*
+
+  put-field(|tid): ArrayField(exp) -> <id>
+    where
+      <get-oids> exp;
+      // When table TID is indexed using a number, it might return OIDs.
+      // NOTE: all indices are in the same equivalence class (number).
+      put-oids(|Index(tid, Number()))
+
+  put-field(|tid): KeyValueField(name, exp) -> <id>
+    where
+      <get-oids> exp;
+      // When table TID is indexed using a string, it might return OIDs.
+      put-oids(|Index(tid, String()));
+      // When field NAME in table TID is accessed, it might return OIDs.
+      put-oids(|Field(tid, name));
+      // Table TID has field NAME, which stores OID.
+      rules( TableField :+ tid -> name )
+
+  put-field(|tid): CalculatedField(_, _) -> <id>
+
+rules // Completion
+
+  assign-oid-complete: Field(exp, COMPLETION(_)) -> []
+    where
+      <get-oids> exp;
+      mapconcat({
+        ?oid;
+        bagof-TableField;
+        map(try(<pp-function> (<id>, <ObjectId> Field(oid, <id>))))
+      }) => proposals;
+      rules( ContentProposals := proposals )
+
+  assign-oid-complete: MethodCall(exp, COMPLETION(_), _) -> []
+    where
+      <get-oids> exp;
+      mapconcat({
+        ?oid;
+        bagof-TableField;
+        map(try(<pp-method> (<id>, <ObjectId> Field(oid, <id>))))
+      }) => proposals;
+      rules( ContentProposals := proposals )
+
+rules // Getters
 
   // Error case: more variables than expressions given in assignment.
   get-oids: None() -> []
@@ -157,14 +248,7 @@ rules
   // FIXME: Be smarter here...
   get-oids: VarArgs() -> []
 
-  get-oids: Var(name) -> oids
-    where
-      if not(oids := <bagof-ObjectId; is-not-empty> name) then
-        // Yet unknown variable is assumed to be a table.
-        oid := Table(<new>){"default"};
-        oids := [oid];
-        rules( ObjectId :+ name -> oid )
-      end
+  get-oids: Var(name) -> <bagof-ObjectId> name
 
   // Used for hover help; not used in the actual type analysis.
   get-oids: Name(name) -> <bagof-ObjectId> name
@@ -198,58 +282,21 @@ rules
   get-oids: Not(_) -> [Boolean()]
   get-oids: Length(_) -> [Number()]
 
-  get-oids: Field(exp, COMPLETION(_)) -> []
-    where
-      <get-oids> exp;
-      mapconcat({
-        ?oid;
-        bagof-TableField;
-        map(try(<pp-function> (<id>, <ObjectId> Field(oid, <id>))))
-      }) => proposals;
-      rules( ContentProposals := proposals )
-
   get-oids: Field(exp, name) -> oids
     where
-      <is-string> name
-    where
       <get-oids> exp;
-      filter({oid,tid,x:
-        ?tid@Table(_); // Only tables.
-        x := Field(tid, name);
-        (
-          // If field known => return all known OIDs.
-          bagof-ObjectId; is-not-empty
-        <+
-          // If field not known => store it. (with table type)
-          oid := Table(<new>){"default"};
-          rules(
-            ObjectId   :+ x -> oid
-            TableField :+ tid -> name
-          );
-          ![oid]
-        )
-      });
-      concat => oids
-
-  get-oids: MethodCall(exp, COMPLETION(_), _) -> []
-    where
-      <get-oids> exp;
-      mapconcat({
-        ?oid;
-        bagof-TableField;
-        map(try(<pp-method> (<id>, <ObjectId> Field(oid, <id>))))
-      }) => proposals;
-      rules( ContentProposals := proposals )
+      filter(?Table(_)); // Only tables.
+      mapconcat(<bagof-ObjectId> Field(<id>, name)) => oids
 
   get-oids: Index(exp, exp-index) -> oids
     where
       oids-index := <get-oids> exp-index;
       <get-oids> exp;
-      filter({tid:
-        ?tid@Table(_); // Only tables.
+      filter(?Table(_)); // Only tables.
+      mapconcat({tid:
+        ?tid;
         <mapconcat(<bagof-ObjectId> Index(tid, <id>))> oids-index
-      });
-      concat => oids
+      }) => oids
 
   // Parameter list is stored for completion.
   get-oids: Function(names, _) -> [Function(<new>, names)]
@@ -258,29 +305,4 @@ rules
   get-oids: FunctionCall(_, _) -> []
   get-oids: MethodCall(_, _, _) -> []
 
-  get-oids: t@TableCons(field*) -> [tid]
-    where
-      if not(ObjectId => tid) then
-        tid := Table(<new>);
-        rules( ObjectId :+ t -> tid );
-        <list-loop(put-field(|tid))> field*
-      end
-
-  put-field(|tid): ArrayField(exp) -> <id>
-    where
-      <get-oids> exp;
-      // When table TID is indexed using a number, it might return OIDs.
-      // NOTE: all indices are in the same equivalence class (number).
-      put-oids(|Index(tid, Number()))
-
-  put-field(|tid): KeyValueField(name, exp) -> <id>
-    where
-      <get-oids> exp;
-      // When table TID is indexed using a string, it might return OIDs.
-      put-oids(|Index(tid, String()));
-      // When field NAME in table TID is accessed, it might return OIDs.
-      put-oids(|Field(tid, name));
-      // Table TID has field NAME, which stores OID.
-      rules( TableField :+ tid -> name )
-
-  put-field(|tid): CalculatedField(_, _) -> <id>
+  get-oids: TableCons(_){a} -> [Table(a)]

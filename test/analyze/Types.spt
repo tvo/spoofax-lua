@@ -33,5 +33,8 @@ build test-type-analysis to [Table(["b"]), Table(["a"])]
 test inferred field / field access [[ u.foo=[[u]] ]]
 build test-type-analysis to [Table(["foo"])]
 
-// test inferred field / method call [[ u:foo([[u]]) ]]
-// build test-type-analysis to [Table(["foo"])]
+test inferred field / method call [[ u:foo([[u]]) ]]
+build test-type-analysis to [Table(["foo"])]
+
+test tablecons are unique [[ local u,[[v]]={},{} u.foo=1 ]]
+build test-type-analysis to [Table([])]
