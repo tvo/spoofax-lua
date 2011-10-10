@@ -64,12 +64,12 @@ of all possible types this variable might have.
       assign-oid-top;
       alltd(assign-oid-complete)
       // DEBUG
-      ;<debug> "=== ObjectId ===";
-      all-keys-ObjectId;
-      list-loop(<debug(!"ObjectId: ")> (<id>, <bagof-ObjectId>));
-      <debug> "=== TableField ===";
-      all-keys-TableField;
-      list-loop(<debug(!"TableField: ")> (<id>, <bagof-TableField>))
+      // ;<debug> "=== ObjectId ===";
+      // all-keys-ObjectId;
+      // list-loop(<debug(!"ObjectId: ")> (<id>, <bagof-ObjectId>));
+      // <debug> "=== TableField ===";
+      // all-keys-TableField;
+      // list-loop(<debug(!"TableField: ")> (<id>, <bagof-TableField>))
       // END DEBUG
     )
 
