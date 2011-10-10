@@ -1,0 +1,37 @@
+language Lua
+module analyze_Types
+
+start symbol Chunk
+
+test nil [[ local [[u]] = nil ]]
+build test-type-analysis to [LuaNil]
+
+test boolean [[ local [[u]] = true ]]
+build test-type-analysis to [Boolean]
+
+test number [[ local [[u]] = 1 ]]
+build test-type-analysis to [Number]
+
+test string [[ local [[u]] = "hi" ]]
+build test-type-analysis to [String]
+
+test empty table [[ local [[u]] = {} ]]
+build test-type-analysis to [Table([])]
+
+test non empty table [[ local [[u]] = {a=1} ]]
+build test-type-analysis to [Table(["a"])]
+
+test function [[ local function [[fun]](x, y) end ]]
+build test-type-analysis to [Function(_, ["x","y"])]
+
+test method [[ function [[table:fun]](x, y) end ]]
+build test-type-analysis to [Function(_, ["self","x","y"])]
+
+test shuffle [[ local [[x]],y = {a=1},{b=2}; x,y=y,x ]]
+build test-type-analysis to [Table(["b"]), Table(["a"])]
+
+test inferred field / field access [[ u.foo=[[u]] ]]
+build test-type-analysis to [Table(["foo"])]
+
+// test inferred field / method call [[ u:foo([[u]]) ]]
+// build test-type-analysis to [Table(["foo"])]

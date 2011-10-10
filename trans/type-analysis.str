@@ -44,6 +44,20 @@ Goal of this type analysis is to calculate for each renamed variable the union
 of all possible types this variable might have.
 */
 
+  test-type-analysis:
+    (selected, _, _, _, _) -> result
+    where
+      !selected;
+      try(?[<id>]);
+      try(?Name(<id>));
+      try(?Var(<id>));
+      try(\MethodName([table],field) -> Field(<ObjectId> table, field)\);
+      bagof-ObjectId;
+      map(try(
+        \Table(_) -> Table(<bagof-TableField>)\
+      + \Function(fid, name*) -> Function(fid, <map(?Name(<strip-annos>))> name*)\
+      )) => result
+
   type-analysis-top =
     with(
       alltd(assign-oid);
@@ -194,7 +208,7 @@ rules
       }) => proposals;
       rules( ContentProposals := proposals )
 
-  get-oids: t@Field(exp, name) -> oids
+  get-oids: Field(exp, name) -> oids
     where
       <is-string> name
     where
@@ -227,7 +241,7 @@ rules
       }) => proposals;
       rules( ContentProposals := proposals )
 
-  get-oids: t@Index(exp, exp-index) -> oids
+  get-oids: Index(exp, exp-index) -> oids
     where
       oids-index := <get-oids> exp-index;
       <get-oids> exp;
