@@ -27,7 +27,7 @@ strategies
     where(
       lua-51-globals;
       list-loop({x: ?x;
-        rules( GlobalVar : x -> x )
+        rules( GlobalVarDef : x -> x )
       })
     );
     alltd(globals)
@@ -49,8 +49,8 @@ rules
     where
       <all(try(
         ?d@Var(x{});
-        not(<GlobalVar> x);
-        rules( GlobalVar : x -> d )
+        not(<GlobalVarDef> x);
+        rules( GlobalVarDef : x -> d )
       ))> var*;
       <globals-top> exp*
 

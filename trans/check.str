@@ -40,17 +40,17 @@ rules
   // check-note:
   //   Var(x{}) -> (<id>, $[Use of global [x]])
   //   where
-  //     <GlobalVar> x
+  //     <GlobalVarDef> x
 
   check-warning:
     Var(x{}) -> (<id>, $[Use of unassigned global [x]])
     where
-      not(<GlobalVar> x) // ever assigned?
+      not(<GlobalVarDef> x) // ever assigned?
 
   check-warning:
     d@ Var(x{}) -> (<id>, $[Unused global [x]])
     where
-      <GlobalVar> x; ?d; // first assignment?
+      <GlobalVarDef> x; ?d; // first assignment?
       not(<VarUse> x)    // ever used?
 
   check-warning:

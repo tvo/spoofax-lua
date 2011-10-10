@@ -78,7 +78,7 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
       target := <decl-of> node
 
   decl-of:
-    Var(x) -> <VarDef <+ GlobalVar> x
+    Var(x) -> <VarDef <+ GlobalVarDef> x
 
   // Returns "hover help" information for a particular node in the editor.
   // For references, this rule is invoked using the resolved term.
@@ -131,7 +131,7 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   propose-completions:
     Var(COMPLETION(_)) -> result
     where
-      <conc> (<ContentProposals>, <all-keys-GlobalVar>);
+      <conc> (<ContentProposals>, <all-keys-GlobalVarDef>);
       map(try(<pp-function> (<id>, <ObjectId>))) => result
 
   propose-completions:
