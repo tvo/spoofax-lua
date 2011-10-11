@@ -19,7 +19,7 @@ test arglist/some [[ f(x) ]]
 build generate-decorated-ast to FunctionCall(_, [Var("x")])
 
 test arglist/tablecons [[ f{} ]]
-build generate-decorated-ast to FunctionCall(_, [TableCons([])])
+build generate-decorated-ast to FunctionCall(_, [TableCons([]){_}])
 
 test arglist/string [[ f "hi" ]]
 build generate-decorated-ast to FunctionCall(_, [String(_)])
@@ -28,10 +28,10 @@ test arglist/rawstring [[[ f [[hi]] ]]]
 build generate-decorated-ast to FunctionCall(_, [String(_)])
 
 test tablecons/none [[ t = {} ]]
-build generate-decorated-ast to Assignment(_, [TableCons([])])
+build generate-decorated-ast to Assignment(_, [TableCons([]){_}])
 
 test tablecons/some [[ t = {1,2} ]]
-build generate-decorated-ast to Assignment(_, [TableCons([_,_])])
+build generate-decorated-ast to Assignment(_, [TableCons([_,_]){_}])
 
 test for loop without step [[ for i=1,10 do end ]]
 build generate-decorated-ast to [[ for i=1,10,1 do end ]]
