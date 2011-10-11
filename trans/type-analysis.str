@@ -82,7 +82,8 @@ rules // Helpers
   put-oids(|t) =
     where( present-oids := <bagof-ObjectId> t );
     list-loop({oid: ?oid;
-      (  <one(?oid)> present-oids
+      (  ?_{"default"}; <is-not-empty> present-oids
+      <+ <one(?oid)> present-oids
       <+ rules( ObjectId :+ t -> oid )  )
     })
 
@@ -92,7 +93,7 @@ rules // Helpers
     list-loop(try({tid:
       ?tid@Table(_); // Only tables.
       <put-oids(|Field(tid, name))> oids-rhs;
-      rules( TableField :+ tid -> name )
+      put-tablefield(|tid, name)
     }))
 
   put-index(|exp-lhs, exp-index, oids-rhs) =
@@ -106,6 +107,10 @@ rules // Helpers
         <put-oids(|Index(tid, oid-index))> oids-rhs
       })
     }))
+
+  put-tablefield(|tid, name) =
+       <bagof-TableField; one(?name)> tid
+    <+ rules( TableField :+ tid -> name )
 
 rules // Generic
 
@@ -133,7 +138,9 @@ rules // Generic
     where
       <assign-oid-top> exp-lhs;
       // Yet unknown field is assumed to be a function.
-      put-field(|exp-lhs, name, [Function(<new>, [Name("self")]){"default"}])
+      // We name the arguments using letters a to z.
+      par* := <map(!Name(<implode-string>[<addi>('a', <id>)]))> <range> <length> arg*;
+      put-field(|exp-lhs, name, [Function(<new>, [Name("self") | par*]){"default"}])
 
   assign-oid: Index(exp-lhs, exp-index) -> <id>
     with
@@ -207,8 +214,8 @@ rules // Table Constructors
       put-oids(|Index(tid, String()));
       // When field NAME in table TID is accessed, it might return OIDs.
       put-oids(|Field(tid, name));
-      // Table TID has field NAME, which stores OID.
-      rules( TableField :+ tid -> name )
+      // Table TID has field NAME.
+      put-tablefield(|tid, name)
 
   put-field(|tid): CalculatedField(_, _) -> <id>
 

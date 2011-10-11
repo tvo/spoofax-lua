@@ -38,3 +38,9 @@ build test-type-analysis to [Table(["foo"])]
 
 test tablecons are unique [[ local u,[[v]]={},{} u.foo=1 ]]
 build test-type-analysis to [Table([])]
+
+test inferred function does not override actual function [[
+  function [[u:foo]](x, y) end
+  u:foo(x, y)
+]]
+build test-type-analysis to [Function(_, ["self", "x", "y"])]
