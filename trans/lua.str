@@ -124,8 +124,10 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
     where
     //   proposals := <ContentProposals>
     // <+
-      <analyze> ast;
-      proposals := <propose-completions> node;
+      {|ObjectId, TableField:
+        <analyze> ast;
+        proposals := <propose-completions> node
+      |};
       rules( ContentProposals := proposals )
 
   propose-completions:
