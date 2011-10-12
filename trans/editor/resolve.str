@@ -25,7 +25,6 @@ imports
 rules
 
   // Resolves a reference when the user control-clicks or presses F3 in the editor.
-  // Only succeeds for nodes of the form Type(_) for which GetEntity is defined.
   editor-resolve:
     (node, position, ast, path, project-path) -> target
     where
