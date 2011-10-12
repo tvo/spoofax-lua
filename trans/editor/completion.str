@@ -1,0 +1,68 @@
+/*
+ * Spoofax-Lua: a Lua Eclipse plugin based on Spoofax
+ * Copyright (C) 2011  Tobi Vollebregt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+module completion
+
+imports
+  libstratego-lib
+  lib/editor-common.generated
+  include/Lua
+  lua
+  rename
+  globals
+  type-analysis
+
+rules
+
+  // Completes an identifier when the user presses control-space
+  // (the completion identifier in the AST provides additional context information)
+  editor-complete:
+    (node, position, ast, path, project-path) -> proposals
+    where
+    //   proposals := <ContentProposals>
+    // <+
+      {|ObjectId, TableField:
+        // ast' and node' are the desugared ast and node, respectively.
+        ast' := <analyze> ast;
+        node' := <collect-one(one(?COMPLETION(_)))> ast';
+        proposals := <propose-completions> node'
+      |}
+      // ;rules( ContentProposals := proposals )
+
+  propose-completions:
+    Var(COMPLETION(_)) -> result
+    where
+      <concat> [<ContentProposals>, <all-keys-GlobalVarDef>, <all-keys-GlobalVarUse>];
+      map(try(<pp-function> (<id>, <ObjectId>))) => result
+
+  propose-completions:
+    Field(exp, COMPLETION(_)) -> proposals
+    where
+      proposals := <propose-table-field-completions(pp-function)> exp
+
+  propose-completions:
+    MethodCall(exp, COMPLETION(_), _) -> proposals
+    where
+      proposals := <propose-table-field-completions(pp-method)> exp
+
+  propose-table-field-completions(pp) =
+    get-oids;
+    mapconcat({
+      ?oid;
+      bagof-TableField;
+      map(try(<pp> (<id>, <ObjectId> Field(oid, <id>))))
+    })

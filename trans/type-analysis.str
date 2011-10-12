@@ -61,8 +61,7 @@ of all possible types this variable might have.
 
   type-analysis-top =
     with(
-      assign-oid-top;
-      alltd(assign-oid-complete)
+      assign-oid-top
       // DEBUG
       // ;<debug> "=== ObjectId ===";
       // all-keys-ObjectId;
@@ -218,28 +217,6 @@ rules // Table Constructors
       put-tablefield(|tid, name)
 
   put-field(|tid): CalculatedField(_, _) -> <id>
-
-rules // Completion
-
-  assign-oid-complete: Field(exp, COMPLETION(_)) -> []
-    where
-      <get-oids> exp;
-      mapconcat({
-        ?oid;
-        bagof-TableField;
-        map(try(<pp-function> (<id>, <ObjectId> Field(oid, <id>))))
-      }) => proposals;
-      rules( ContentProposals := proposals )
-
-  assign-oid-complete: MethodCall(exp, COMPLETION(_), _) -> []
-    where
-      <get-oids> exp;
-      mapconcat({
-        ?oid;
-        bagof-TableField;
-        map(try(<pp-method> (<id>, <ObjectId> Field(oid, <id>))))
-      }) => proposals;
-      rules( ContentProposals := proposals )
 
 rules // Getters
 

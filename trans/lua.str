@@ -29,6 +29,7 @@ imports
   rename
   rename-loop
   type-analysis
+  editor/completion
 
 signature
   constructors
@@ -116,35 +117,6 @@ rules // Main editor interface (defined by editor/Lua-Builders and -References.e
   // Removes the first (self) argument, and invokes pp-function.
   pp-method: (name, Function(oid, [_ | arg*])) ->
     <pp-function> (name, Function(oid, arg*))
-
-  // Completes an identifier when the user presses control-space
-  // (the completion identifier in the AST provides additional context information)
-  editor-complete:
-    (node, position, ast, path, project-path) -> proposals
-    where
-    //   proposals := <ContentProposals>
-    // <+
-      {|ObjectId, TableField:
-        <analyze> ast;
-        proposals := <propose-completions> node
-      |};
-      rules( ContentProposals := proposals )
-
-  propose-completions:
-    Var(COMPLETION(_)) -> result
-    where
-      <concat> [<ContentProposals>, <all-keys-GlobalVarDef>, <all-keys-GlobalVarUse>];
-      map(try(<pp-function> (<id>, <ObjectId>))) => result
-
-  propose-completions:
-    Field(_, COMPLETION(_)) -> <ContentProposals>
-
-  propose-completions:
-    MethodCall(_, COMPLETION(_), _) -> <ContentProposals>
-
-  // Recovery variant
-  propose-completions:
-    MethodCall(_, COMPLETION(_)) -> <ContentProposals>
 
   parse-test:
     (selected, position, ast, path, project-path) -> None()
