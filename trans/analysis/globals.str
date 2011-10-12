@@ -19,7 +19,6 @@ module globals
 
 imports
   include/Lua
-  rename
 
 strategies
 

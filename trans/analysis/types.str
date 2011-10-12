@@ -15,22 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-module type-analysis
+module types
 
 imports
   include/Lua
-  lib/editor-common.generated
-  lua // FIXME: get rid of circular import
 
+// Signatures not generated from SDF because of the ast(...) construct.
 signature
   constructors
+    Minus : Exp -> Exp
+    Minus : Exp * Exp -> Exp
+
+// Signatures of types stored by the type analysis.
+signature
+  constructors
+    Null     : Null
     Boolean  : Boolean
     Number   : Number
     String   : String
     Table    : String -> Table
     Function : String * List(String) -> Function
-    Minus    : Exp * Exp -> Exp
-    Minus    : Exp -> Exp
 
 strategies
 
@@ -290,3 +294,29 @@ rules // Getters
   get-oids: MethodCall(_, _, _) -> []
 
   get-oids: TableCons(_){a} -> [Table(a)]
+
+rules // Pretty printing types
+
+  pp-type: Null() -> "nil"
+  pp-type: Boolean() -> "boolean"
+  pp-type: Number() -> "number"
+  pp-type: String() -> "string"
+
+  pp-type: Table(_){} -> "table"
+    where not(TableField)
+
+  pp-type: Table(_) ->
+    $[table { [<bagof-TableField; string-sort; separate-by(|", ")>] }]
+    where TableField
+
+  pp-type: Function(_, _) -> <pp-function; concat-strings> ("function ", <id>)
+
+  // Returns list of strings
+  pp-function: (name, Function(_, arg*)) -> [name, "(", arg'*, ")"]
+    where
+      arg'* := <map(?Name(<id>) + (VarArgs() -> "..."));
+                separate-by(|", ")> arg*
+
+  // Removes the first (self) argument, and invokes pp-function.
+  pp-method: (name, Function(oid, [_ | arg*])) ->
+    <pp-function> (name, Function(oid, arg*))

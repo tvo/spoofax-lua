@@ -15,13 +15,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-module check
+module analyze
 
 imports
-  include/Lua
   lib/editor-common.generated
-  globals
-  rename
+  include/Lua
+  analysis/analyze
+  analysis/globals
+  analysis/locals
+
+rules
+
+  // Analyzes the current program, returning a tuple with errors, warnings, and notes;
+  // each a list of (term, message) tuples or simply (message) terms.
+  editor-analyze:
+    (ast, path, project-path) -> result
+    with
+      editor-init;
+      ast' := <analyze> ast;
+      if !ast' => File(_, _) then
+        errors   := <collect-all(check-error, conc)> ast';
+        warnings := <collect-all(check-warning, conc)> ast';
+        notes    := <collect-all(check-note, conc)> ast';
+        result   := (ast', errors, warnings, notes)
+      else
+        // For syntax tests
+        result   := (ast', [], [], [])
+      end
 
 rules
 

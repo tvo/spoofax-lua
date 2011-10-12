@@ -15,16 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-module completion
+module complete
 
 imports
-  libstratego-lib
   lib/editor-common.generated
   include/Lua
-  lua
-  rename
-  globals
-  type-analysis
+  analysis/analyze
+  analysis/globals
+  analysis/locals
+  analysis/types
 
 rules
 

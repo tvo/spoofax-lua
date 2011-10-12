@@ -15,34 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-module lua
+module hover
 
 imports
   lib/editor-common.generated
-  editor/analyze
-  editor/complete
-  editor/hover
-  editor/resolve
+  include/Lua
+  analysis/types
 
 rules
 
-  // Prints the AST of a selection.
-  generate-aterm:
-    (selected, position, ast, path, project-path) -> (filename, selected)
-    with
-      filename := <guarantee-extension(|"aterm")> path
+  // Returns "hover help" information for a particular node in the editor.
+  // For references, this rule is invoked using the resolved term.
+  editor-hover:
+    (target, position, ast, path, project-path) ->
+      $[<b>Possible types:</b><br/><ul>[list]</ul>]
+    where
+      list := <get-pretty-types> target
+    <+
+      parent-of-target := <parent-at-position(|position)> ast;
+      list := <get-pretty-types> parent-of-target
 
-  // Prints the decorated AST of a selection.
-  // Only diff with generate-aterm is the lack of (source) annotation in Lua-Builders.esv
-  generate-decorated-ast = generate-aterm
-
-  parse-test:
-    (selected, position, ast, path, project-path) -> None()
-    with
-      <readdir; string-sort> "test/parse";
-      list-loop({filename: ?filename;
-        profile(!filename,
-          !$[test/parse/[filename]];
-          (parse-lua-file <+ debug(!"Fails parsing: "))
-        )
-      })
+  get-pretty-types = get-oids; filter(pp-type; !$[<li> [<id>]</li>]); nub
