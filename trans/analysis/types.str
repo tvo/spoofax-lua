@@ -52,9 +52,12 @@ of all possible types this variable might have.
     (selected, _, _, _, _) -> result
     where
       !selected;
+      debug;
       try(?[<id>]);
       try(?Name(<id>));
       try(?Var(<id>));
+      try(\Field(exp, name) -> Field(<get-oids; Hd> exp, name)\);
+      try(\MethodCall(exp, name, _) -> Field(<get-oids; Hd> exp, name)\);
       try(\MethodName([table],field) -> Field(<ObjectId> table, field)\);
       bagof-ObjectId;
       // try(filter(not(?_{"default"})); is-not-empty);
@@ -140,10 +143,29 @@ rules // Generic
       <is-string> name // Exclude COMPLETION(_) node
     where
       <assign-oid-top> exp-lhs;
-      // Yet unknown field is assumed to be a function.
-      // We name the arguments using letters a to z.
-      par* := <map(!Name(<implode-string>[<addi>('a', <id>)]))> <range> <length> arg*;
+      // Yet unknown field is assumed to be a method.
+      par* := <infer-function-parameters> arg*;
       put-field(|exp-lhs, name, [Function(<new>, [Name("self") | par*]){"default"}])
+
+  assign-oid: FunctionCall(Var(name), arg*) -> <id>
+    where
+      if <bagof-ObjectId; is-empty> name then
+        // Yet unknown variable is assumed to be a function.
+        par* := <infer-function-parameters> arg*;
+        oid := Function(<new>, par*){"default"};
+        rules( ObjectId :+ name -> oid )
+      end
+
+  assign-oid: FunctionCall(Field(exp-lhs, name), arg*) -> <id>
+    where
+      <assign-oid-top> exp-lhs;
+      // Yet unknown field is assumed to be a function.
+      par* := <infer-function-parameters> arg*;
+      put-field(|exp-lhs, name, [Function(<new>, par*){"default"}])
+
+  infer-function-parameters =
+    // We name the arguments using letters a to z.
+    length; range; map(!Name(<implode-string>[<addi>('a', <id>)]))
 
   assign-oid: Index(exp-lhs, exp-index) -> <id>
     with
