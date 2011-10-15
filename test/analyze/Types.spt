@@ -22,25 +22,28 @@ test non empty table [[ local [[u]] = {a=1} ]]
 build test-type-analysis to [Table(["a"])]
 
 test function [[ local function [[fun]](x, y) end ]]
-build test-type-analysis to [Function(_, ["x","y"])]
+build test-type-analysis to [Function(["x","y"])]
 
 test method [[ function [[table:fun]](x, y) end ]]
-build test-type-analysis to [Function(_, ["self","x","y"])]
+build test-type-analysis to [Function(["self","x","y"])]
 
 test shuffle [[ local [[x]],y = {a=1},{b=2}; x,y=y,x ]]
 build test-type-analysis to [Table(["b"]), Table(["a"])]
 
 test inferred var / function call [[ do [[u]](u) end ]]
-build test-type-analysis to [Function(_, [_])]
+build test-type-analysis to [Function([_])]
 
-test inferred field / field access [[ u.foo=[[u]] ]]
+test inferred field / field access (1) [[ u.foo=[[u]] ]]
 build test-type-analysis to [Table(["foo"])]
 
+test inferred field / field access (2) [[ u.foo=[[u]].bar ]]
+build test-type-analysis to [Table(["foo", "bar"])]
+
 test inferred field / function call [[ do [[u.foo]](u) end ]]
-build test-type-analysis to [Function(_, [_])]
+build test-type-analysis to [Function([_])]
 
 test inferred field / method call [[ do [[u:foo]](u) end ]]
-build test-type-analysis to [Function(_, ["self", _])]
+build test-type-analysis to [Function(["self", _])]
 
 test tablecons are unique [[ local u,[[v]]={},{} u.foo=1 ]]
 build test-type-analysis to [Table([])]
@@ -49,4 +52,10 @@ test inferred function does not override actual function [[
   function [[u:foo]](x, y) end
   u:foo(x, y)
 ]]
-build test-type-analysis to [Function(_, ["self", "x", "y"])]
+build test-type-analysis to [Function(["self", "x", "y"])]
+
+test reverse inferred type propagation [[
+  local x = [[u]]
+  u(x,y)
+]]
+build test-type-analysis to [Function([_, _])]

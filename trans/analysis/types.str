@@ -33,19 +33,23 @@ signature
     Boolean  : Boolean
     Number   : Number
     String   : String
-    Table    : String -> Table
-    Function : String * List(String) -> Function
+    Table    : Table
+    Table    : List(String) -> Table    // for test integration
+    Function : List(String) -> Function
 
 strategies
 
 /*
-ObjectId dynamic rule maps
-- AST elements to their ObjectId
-- Field(ObjectId, String) to its ObjectId
-- Index(ObjectId, String) to its ObjectId
-
 Goal of this type analysis is to calculate for each renamed variable the union
-of all possible types this variable might have.
+of all possible types a variable might have.
+
+ObjectId maps a renamed name, a Field(oid, string) or an Index(oid, ?) to a set of object identifiers.
+TypeOf maps an object identifier to the set of inferred types for this object identifier.
+
+That is, ObjectId is used to infer which variables might point to the same objects, regardless of their type.
+TypeOf is used to store what type each object might have.
+
+TableField maps oid -> field names.
 */
 
   test-type-analysis:
@@ -60,22 +64,34 @@ of all possible types this variable might have.
       try(\MethodCall(exp, name, _) -> Field(<get-oids; Hd> exp, name)\);
       try(\MethodName([table],field) -> Field(<ObjectId> table, field)\);
       bagof-ObjectId;
-      // try(filter(not(?_{"default"})); is-not-empty);
+      mapconcat({oid: ?oid;
+        bagof-TypeOf; try(filter(?_{}); is-not-empty);
+        map(try(\Table() -> Table(<bagof-TableField> oid)\))
+      });
       map(try(
-        \Table(_) -> Table(<bagof-TableField>)\
-      + \Function(fid, name*) -> Function(fid, <map(?Name(<strip-annos>))> name*)\
+        \Function(name*) -> Function(<map(?Name(<strip-annos>))> name*)\
       )) => result
 
   type-analysis-top =
     with(
+      rules(
+        TypeOf :+ Null() -> Null()
+        TypeOf :+ Boolean() -> Boolean()
+        TypeOf :+ Number() -> Number()
+        TypeOf :+ String() -> String()
+      );
       assign-oid-top
       // DEBUG
       // ;<debug> "=== ObjectId ===";
       // all-keys-ObjectId;
       // list-loop(<debug(!"ObjectId: ")> (<id>, <bagof-ObjectId>));
+      // <debug> "=== TypeOf ===";
+      // all-keys-TypeOf;
+      // list-loop(<debug(!"TypeOf: ")> (<id>, <bagof-TypeOf>));
       // <debug> "=== TableField ===";
       // all-keys-TableField;
-      // list-loop(<debug(!"TableField: ")> (<id>, <bagof-TableField>))
+      // list-loop(<debug(!"TableField: ")> (<id>, <bagof-TableField>));
+      // <debug> "=== END ==="
       // END DEBUG
     )
 
@@ -84,39 +100,34 @@ of all possible types this variable might have.
 
 rules // Helpers
 
+  obtain-oids =
+       bagof-ObjectId;
+       is-not-empty
+    <+
+       ?t;
+       oid := <new>;
+       rules( ObjectId :+ t -> oid );
+       ![oid]
+
   // Assign all OIDs in current term (list) to the key T.
   put-oids(|t) =
     where( present-oids := <bagof-ObjectId> t );
     list-loop({oid: ?oid;
-      (  ?_{"default"}; <is-not-empty> present-oids
-      <+ <one(?oid)> present-oids
+      (  <one(?oid)> present-oids
       <+ rules( ObjectId :+ t -> oid )  )
     })
 
-  // Assign all OIDs of RHS to field NAME of all table OIDs in LHS.
-  put-field(|exp-lhs, name, oids-rhs) =
-    <get-oids> exp-lhs;
-    list-loop(try({tid:
-      ?tid@Table(_); // Only tables.
-      <put-oids(|Field(tid, name))> oids-rhs;
-      put-tablefield(|tid, name)
-    }))
+  put-type-of(|type) =
+    where(
+         bagof-TypeOf; one(?type)
+      <+ ?oid; rules( TypeOf :+ oid -> type )
+    )
 
-  put-index(|exp-lhs, exp-index, oids-rhs) =
-    oids-index := <get-oids> exp-index;
-    <get-oids> exp-lhs;
-    list-loop(try({tid:
-      ?tid@Table(_);
-      !oids-index;
-      list-loop({oid-index:
-        ?oid-index;
-        <put-oids(|Index(tid, oid-index))> oids-rhs
-      })
-    }))
-
-  put-tablefield(|tid, name) =
-       <bagof-TableField; one(?name)> tid
-    <+ rules( TableField :+ tid -> name )
+  put-table-field(|name) =
+    where(
+         bagof-TableField; one(?name)
+      <+ ?oid; rules( TableField :+ oid -> name )
+    )
 
 rules // Generic
 
@@ -124,44 +135,57 @@ rules // Generic
 
   assign-oid: Var(name) -> <id>
     with
-      if <bagof-ObjectId; is-empty> name then
-        // Yet unknown variable is assumed to be a table.
-        oid := Table(<new>){"default"};
-        rules( ObjectId :+ name -> oid )
-      end
+      <obtain-oids> name
 
   assign-oid: Field(exp-lhs, name) -> <id>
     where
       <is-string> name // Exclude COMPLETION(_) node
     with
       <assign-oid-top> exp-lhs;
-      // Yet unknown field is assumed to be a table.
-      put-field(|exp-lhs, name, [Table(<new>){"default"}])
+      <get-oids> exp-lhs;
+      list-loop(
+        put-type-of(|Table());
+        put-table-field(|name);
+        <obtain-oids> Field(<id>, name)
+      )
 
   assign-oid: MethodCall(exp-lhs, name, arg*) -> <id>
     where
       <is-string> name // Exclude COMPLETION(_) node
-    where
+    with
       <assign-oid-top> exp-lhs;
-      // Yet unknown field is assumed to be a method.
-      par* := <infer-function-parameters> arg*;
-      put-field(|exp-lhs, name, [Function(<new>, [Name("self") | par*]){"default"}])
+      method := <infer-method-type> arg*;
+      <get-oids> exp-lhs;
+      list-loop(
+        put-type-of(|Table());
+        put-table-field(|name);
+        <obtain-oids> Field(<id>, name);
+        list-loop(put-type-of(|method))
+      )
 
   assign-oid: FunctionCall(Var(name), arg*) -> <id>
-    where
-      if <bagof-ObjectId; is-empty> name then
-        // Yet unknown variable is assumed to be a function.
-        par* := <infer-function-parameters> arg*;
-        oid := Function(<new>, par*){"default"};
-        rules( ObjectId :+ name -> oid )
-      end
+    with
+      function := <infer-function-type> arg*;
+      <obtain-oids> name;
+      list-loop(put-type-of(|function))
 
   assign-oid: FunctionCall(Field(exp-lhs, name), arg*) -> <id>
-    where
+    with
       <assign-oid-top> exp-lhs;
-      // Yet unknown field is assumed to be a function.
-      par* := <infer-function-parameters> arg*;
-      put-field(|exp-lhs, name, [Function(<new>, par*){"default"}])
+      function := <infer-function-type> arg*;
+      <get-oids> exp-lhs;
+      list-loop(
+        put-type-of(|Table());
+        put-table-field(|name);
+        <obtain-oids> Field(<id>, name);
+        list-loop(put-type-of(|function))
+      )
+
+  infer-function-type =
+    !Function(<infer-function-parameters>){"inferred"}
+
+  infer-method-type =
+    !Function([Name("self") | <infer-function-parameters>]){"inferred"}
 
   infer-function-parameters =
     // We name the arguments using letters a to z.
@@ -171,7 +195,19 @@ rules // Generic
     with
       <assign-oid-top> exp-lhs;
       <assign-oid-top> exp-index;
-      put-index(|exp-lhs, exp-index, [Table(<new>){"default"}])
+      oids-index := <get-oids> exp-index;
+      types-index := <mapconcat(bagof-TypeOf)> oids-index;
+      <get-oids> exp-lhs;
+      list-loop({oid-lhs:
+        ?oid-lhs;
+        put-type-of(|Table());
+        <list-loop(<obtain-oids> Index(oid-lhs, <id>))> types-index
+      })
+
+  assign-oid: Function(par*, body){a} -> <id>
+    with
+      <assign-oid-top> body;
+      <put-type-of(|Function(par*))> a
 
 rules // Assignments
 
@@ -205,7 +241,14 @@ rules // Assignments
       <assign-oid-top> exp-lhs;
       // Set all possible OIDs of the RHS to
       // the NAME field of all tables on the LHS.
-      put-field(|exp-lhs, name, <get-oids> exp-rhs)
+      oids-rhs := <get-oids> exp-rhs;
+      <get-oids> exp-lhs;
+      list-loop({oid-lhs:
+        ?oid-lhs;
+        put-type-of(|Table());
+        put-table-field(|name);
+        <put-oids(|Field(oid-lhs, name))> oids-rhs
+      })
 
   // Assignment to an index, e.g. `x[1] = 2'
   assignment-assign-oid:
@@ -213,7 +256,19 @@ rules // Assignments
     where
       <assign-oid-top> exp-lhs;
       <assign-oid-top> exp-index;
-      put-index(|exp-lhs, exp-index, <get-oids> exp-rhs)
+      oids-index := <get-oids> exp-index;
+      types-index := <mapconcat(bagof-TypeOf)> oids-index;
+      oids-rhs := <get-oids> exp-rhs;
+      <get-oids> exp-lhs;
+      list-loop({oid-lhs:
+        ?oid-lhs;
+        put-type-of(|Table());
+        !types-index;
+        list-loop({type-index:
+          ?type-index;
+          <put-oids(|Index(oid-lhs, type-index))> oids-rhs
+        })
+      })
 
   // Error case: more expressions than variables given in assignment.
   assignment-assign-oid:
@@ -223,7 +278,8 @@ rules // Table Constructors
 
   assign-oid: TableCons(field*){a} -> <id>
     with
-      <list-loop(put-field(|Table(a)))> field*
+      <put-type-of(|Table())> a;
+      <list-loop(put-field(|a))> field*
 
   put-field(|tid): ArrayField(exp) -> <id>
     where
@@ -240,7 +296,7 @@ rules // Table Constructors
       // When field NAME in table TID is accessed, it might return OIDs.
       put-oids(|Field(tid, name));
       // Table TID has field NAME.
-      put-tablefield(|tid, name)
+      <put-table-field(|name)> tid
 
   put-field(|tid): CalculatedField(_, _) -> <id>
 
@@ -295,27 +351,36 @@ rules // Getters
   get-oids: Field(exp, name) -> oids
     where
       <get-oids> exp;
-      filter(?Table(_)); // Only tables.
       mapconcat(<bagof-ObjectId> Field(<id>, name)) => oids
 
   get-oids: Index(exp, exp-index) -> oids
     where
       oids-index := <get-oids> exp-index;
+      types-index := <mapconcat(bagof-TypeOf)> oids-index;
       <get-oids> exp;
-      filter(?Table(_)); // Only tables.
       mapconcat({tid:
         ?tid;
-        <mapconcat(<bagof-ObjectId> Index(tid, <id>))> oids-index
+        <mapconcat(<bagof-ObjectId> Index(tid, <id>))> types-index
       }) => oids
 
   // Parameter list is stored for completion.
-  get-oids: Function(names, _) -> [Function(<new>, names)]
+  get-oids: Function(_, _){a} -> [a]
 
   // FIXME: Should get OIDs that function/method can return
   get-oids: FunctionCall(_, _) -> []
   get-oids: MethodCall(_, _, _) -> []
 
-  get-oids: TableCons(_){a} -> [Table(a)]
+  get-oids: TableCons(_){a} -> [a]
+
+rules // Getters
+
+  get-types =
+    get-oids;
+    mapconcat({oid: ?oid;
+      bagof-TypeOf;
+      try(filter(?_{}); is-not-empty);
+      map(try(\Table() -> Table(<bagof-TableField> oid)\))
+    })
 
 rules // Pretty printing types
 
@@ -324,21 +389,17 @@ rules // Pretty printing types
   pp-type: Number() -> "number"
   pp-type: String() -> "string"
 
-  pp-type: Table(_){} -> "table"
-    where not(TableField)
+  pp-type: Table(fields) ->
+    $[table { [<string-sort; separate-by(|", ")> fields] }]
 
-  pp-type: Table(_) ->
-    $[table { [<bagof-TableField; string-sort; separate-by(|", ")>] }]
-    where TableField
-
-  pp-type: Function(_, _) -> <pp-function; concat-strings> ("function ", <id>)
+  pp-type: Function(_) -> <pp-function; concat-strings> ("function ", <id>)
 
   // Returns list of strings
-  pp-function: (name, Function(_, arg*)) -> [name, "(", arg'*, ")"]
+  pp-function: (name, Function(arg*)) -> [name, "(", arg'*, ")"]
     where
       arg'* := <map(?Name(<id>) + (VarArgs() -> "..."));
                 separate-by(|", ")> arg*
 
   // Removes the first (self) argument, and invokes pp-function.
-  pp-method: (name, Function(oid, [_ | arg*])) ->
-    <pp-function> (name, Function(oid, arg*))
+  pp-method: (name, Function([_ | arg*])) ->
+    <pp-function> (name, Function(arg*))

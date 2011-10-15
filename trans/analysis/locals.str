@@ -60,7 +60,13 @@ rules
   rename: Chunk(_) -> <rename-scope>
   rename: ForLoop(_, _, _, _, _) -> <rename-scope>
   rename: ForEachLoop(_, _, _) -> <rename-scope>
-  rename: Function(_, _) -> <rename-scope>
+
+  // Give each function a unique name,
+  // to be able to distinguish them during type analysis.
+  rename: Function(args, body) -> <rename-scope> Function(args', body'){<new>}
+    where
+      args' := <rename-top'> args;
+      body' := <rename-top'> body
 
   // Special handling for `repeat ... until exp' loops because
   // the scope of the body includes the loop condition exp.
