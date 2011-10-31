@@ -37,6 +37,7 @@ rules
       {|ObjectId, TableField:
         // ast' and node' are the desugared ast and node, respectively.
         ast' := <analyze> ast;
+        // debug-type-analysis;
         node' := <collect-one(one(?COMPLETION(_)))> ast';
         proposals := <propose-completions> node'
       |};

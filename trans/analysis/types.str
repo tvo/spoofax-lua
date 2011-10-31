@@ -77,19 +77,20 @@ TableField maps oid -> field names.
         TypeOf :+ String() -> String()
       );
       assign-oid-top
-      // DEBUG
-      // ;<debug> "=== ObjectId ===";
-      // all-keys-ObjectId;
-      // list-loop(<debug(!"ObjectId: ")> (<id>, <bagof-ObjectId>));
-      // <debug> "=== TypeOf ===";
-      // all-keys-TypeOf;
-      // list-loop(<debug(!"TypeOf: ")> (<id>, <bagof-TypeOf>));
-      // <debug> "=== TableField ===";
-      // all-keys-TableField;
-      // list-loop(<debug(!"TableField: ")> (<id>, <bagof-TableField>));
-      // <debug> "=== END ==="
-      // END DEBUG
+      // ;debug-type-analysis
     )
+
+  debug-type-analysis =
+    <debug> "=== ObjectId ===";
+    all-keys-ObjectId;
+    list-loop(<debug(!"ObjectId: ")> (<id>, <bagof-ObjectId>));
+    <debug> "=== TypeOf ===";
+    all-keys-TypeOf;
+    list-loop(<debug(!"TypeOf: ")> (<id>, <bagof-TypeOf>));
+    <debug> "=== TableField ===";
+    all-keys-TableField;
+    list-loop(<debug(!"TableField: ")> (<id>, <bagof-TableField>));
+    <debug> "=== END ==="
 
   is-empty = ?[]
   is-not-empty = ?[_|_]
