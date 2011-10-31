@@ -28,7 +28,7 @@ test method [[ function [[table:fun]](x, y) end ]]
 build test-type-analysis to [Function(["self","x","y"])]
 
 test shuffle [[ local [[x]],y = {a=1},{b=2}; x,y=y,x ]]
-build test-type-analysis to [Table(["b"]), Table(["a"])]
+build test-type-analysis to [Table(["b", "a"])]
 
 test inferred var / function call [[ do [[u]](u) end ]]
 build test-type-analysis to [Function([_])]
@@ -54,8 +54,22 @@ test inferred function does not override actual function [[
 ]]
 build test-type-analysis to [Function(["self", "x", "y"])]
 
-test reverse inferred type propagation [[
+test reverse inferred type propagation of function (1) [[
   local x = [[u]]
   u(x,y)
 ]]
 build test-type-analysis to [Function([_, _])]
+
+test reverse inferred type propagation of function (2) [[
+  local x = [[u]]
+  u(x,y)
+  function u(x, y) end
+]]
+build test-type-analysis to [Function(["x", "y"])]
+
+test reverse inferred type propagation of table [[
+  local x = [[u]]
+  u.foo = 3
+  u = {bar=4}
+]]
+build test-type-analysis to [Table(["bar", "foo"])]

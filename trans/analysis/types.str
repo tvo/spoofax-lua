@@ -52,22 +52,18 @@ TypeOf is used to store what type each object might have.
 TableField maps oid -> field names.
 */
 
+  // integration with Types.spt
   test-type-analysis:
     (selected, _, _, _, _) -> result
     where
       !selected;
-      debug;
       try(?[<id>]);
       try(?Name(<id>));
       try(?Var(<id>));
       try(\Field(exp, name) -> Field(<get-oids; Hd> exp, name)\);
       try(\MethodCall(exp, name, _) -> Field(<get-oids; Hd> exp, name)\);
       try(\MethodName([table],field) -> Field(<ObjectId> table, field)\);
-      bagof-ObjectId;
-      mapconcat({oid: ?oid;
-        bagof-TypeOf; try(filter(?_{}); is-not-empty);
-        map(try(\Table() -> Table(<bagof-TableField> oid)\))
-      });
+      get-types;
       map(try(
         \Function(name*) -> Function(<map(?Name(<strip-annos>))> name*)\
       )) => result
@@ -149,6 +145,21 @@ rules // Generic
         <obtain-oids> Field(<id>, name)
       )
 
+  assign-oid: Index(exp-lhs, exp-index) -> <id>
+    with
+      <assign-oid-top> exp-lhs;
+      <assign-oid-top> exp-index;
+      oids-index := <get-oids> exp-index;
+      types-index := <mapconcat(bagof-TypeOf)> oids-index;
+      <get-oids> exp-lhs;
+      list-loop({oid-lhs:
+        ?oid-lhs;
+        put-type-of(|Table());
+        <list-loop(<obtain-oids> Index(oid-lhs, <id>))> types-index
+      })
+
+rules // Method / function calls
+
   assign-oid: MethodCall(exp-lhs, name, arg*) -> <id>
     where
       <is-string> name // Exclude COMPLETION(_) node
@@ -181,6 +192,11 @@ rules // Generic
         list-loop(put-type-of(|function))
       )
 
+  assign-oid: Function(par*, body){a} -> <id>
+    with
+      <assign-oid-top> body;
+      <put-type-of(|Function(par*))> a
+
   infer-function-type =
     !Function(<infer-function-parameters>){"inferred"}
 
@@ -190,24 +206,6 @@ rules // Generic
   infer-function-parameters =
     // We name the arguments using letters a to z.
     length; range; map(!Name(<implode-string>[<addi>('a', <id>)]))
-
-  assign-oid: Index(exp-lhs, exp-index) -> <id>
-    with
-      <assign-oid-top> exp-lhs;
-      <assign-oid-top> exp-index;
-      oids-index := <get-oids> exp-index;
-      types-index := <mapconcat(bagof-TypeOf)> oids-index;
-      <get-oids> exp-lhs;
-      list-loop({oid-lhs:
-        ?oid-lhs;
-        put-type-of(|Table());
-        <list-loop(<obtain-oids> Index(oid-lhs, <id>))> types-index
-      })
-
-  assign-oid: Function(par*, body){a} -> <id>
-    with
-      <assign-oid-top> body;
-      <put-type-of(|Function(par*))> a
 
 rules // Assignments
 
@@ -263,11 +261,10 @@ rules // Assignments
       list-loop({oid-lhs:
         ?oid-lhs;
         put-type-of(|Table());
-        !types-index;
-        list-loop({type-index:
+        <list-loop({type-index:
           ?type-index;
           <put-oids(|Index(oid-lhs, type-index))> oids-rhs
-        })
+        })> types-index
       })
 
   // Error case: more expressions than variables given in assignment.
@@ -375,12 +372,14 @@ rules // Getters
 rules // Getters
 
   get-types =
-    get-oids;
-    mapconcat({oid: ?oid;
-      bagof-TypeOf;
-      try(filter(?_{}); is-not-empty);
-      map(try(\Table() -> Table(<bagof-TableField> oid)\))
-    })
+    (get-oids <+ bagof-ObjectId) => oids;
+    mapconcat(bagof-TypeOf);
+    // Filter out "inferred" types iff we have actual types.
+    try(filter(?_{}); is-not-empty);
+    // Make unique. Same type may enter the list via different OIDs.
+    nub;
+    // Add fields to table type. (Fields from all OIDs are combined.)
+    map(try(\Table() -> Table(<mapconcat(bagof-TableField)> oids)\))
 
 rules // Pretty printing types
 
