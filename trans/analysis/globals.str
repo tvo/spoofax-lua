@@ -46,11 +46,11 @@ rules
   globals:
     Assignment(var*, exp*) -> <id>
     where
-      <all(try(
+      <all(try({x,d:
         ?d@Var(x{});
         not(<GlobalVarDef> x);
         rules( GlobalVarDef : x -> d )
-      ))> var*;
+      }))> var*;
       <globals-top> exp*
 
   globals:
