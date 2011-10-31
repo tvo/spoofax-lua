@@ -35,4 +35,5 @@ rules
       parent-of-target := <parent-at-position(|position)> ast;
       list := <get-pretty-types> parent-of-target
 
-  get-pretty-types = get-types; filter(pp-type; !$[<li> [<id>]</li>]); nub
+  get-pretty-types =
+    get-complete-types; filter(pp-type; !$[<li> [<id>]</li>]); nub

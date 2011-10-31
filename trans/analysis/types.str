@@ -63,7 +63,7 @@ TableField maps oid -> field names.
       try(\Field(exp, name) -> Field(<get-oids; Hd> exp, name)\);
       try(\MethodCall(exp, name, _) -> Field(<get-oids; Hd> exp, name)\);
       try(\MethodName([table],field) -> Field(<ObjectId> table, field)\);
-      get-types;
+      get-complete-types;
       map(try(
         \Function(name*) -> Function(<map(?Name(<strip-annos>))> name*)\
       )) => result
@@ -372,13 +372,24 @@ rules // Getters
 
 rules // Getters
 
-  get-types =
-    (get-oids <+ bagof-ObjectId) => oids;
+  get-oids' =
+    bagof-ObjectId; is-not-empty <+ get-oids
+
+  get-simple-types' =
     mapconcat(bagof-TypeOf);
     // Filter out "inferred" types iff we have actual types.
     try(filter(?_{}); is-not-empty);
     // Make unique. Same type may enter the list via different OIDs.
-    nub;
+    nub
+
+  // Map OIDs to types, including function signatures, excluding table fields.
+  get-simple-types =
+    get-oids'; get-simple-types'
+
+  // Map OIDs to types, including function signatures, and table fields.
+  get-complete-types =
+    get-oids' => oids;
+    get-simple-types';
     // Add fields to table type. (Fields from all OIDs are combined.)
     map(try(\Table() -> Table(<mapconcat(bagof-TableField)> oids)\))
 
