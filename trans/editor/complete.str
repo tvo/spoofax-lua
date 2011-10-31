@@ -47,7 +47,7 @@ rules
     Var(COMPLETION(_)) -> result
     where
       <concat> [<ContentProposals>, <all-keys-GlobalVarDef>, <all-keys-GlobalVarUse>];
-      map(try(<pp-function> (<id>, <ObjectId>))) => result
+      map(try(<pp-function> (<id>, <to-simple-type>))) => result
 
   propose-completions:
     Field(exp, COMPLETION(_)) -> proposals
@@ -64,5 +64,8 @@ rules
     mapconcat({
       ?oid;
       bagof-TableField;
-      map(try(<pp> (<id>, <ObjectId> Field(oid, <id>))))
+      map(try(<pp> (<id>, <to-simple-type> Field(oid, <id>))))
     })
+
+  to-simple-type =
+    get-simple-types; Hd
