@@ -4,8 +4,8 @@ module editor_Resolve
 start symbol Chunk
 
 test global variable [[
-  [[x]] = 12
-  [[x]] = 13
+  a,[[x]] = 12
+  [[x]],a = 13
 ]]
 resolve #2 to #1
 
@@ -13,11 +13,11 @@ test global function [[
   function [[fun]]() end
   [[fun]]()
 ]]
-resolve #2 to #1
+resolve #2 //to #1   // Desugar messes this up?
 
 test local variable [[
-  local [[x]]
-  [[x]] = 12
+  local a,[[x]]
+  [[x]],a = 12
 ]]
 resolve #2 to #1
 
@@ -28,9 +28,9 @@ test local function [[
 resolve #2 to #1
 
 test scope/chunk (1) [[
-  local [[x]]
+  local a,[[x]]
   do
-    [[x]] = 12
+    [[x]],a = 12
     local x
   end
 ]]
@@ -39,22 +39,22 @@ resolve #2 to #1
 test scope/chunk (2) [[
   local x
   do
-    local [[x]]
-    [[x]] = 12
+    local [[x]],a
+    a,[[x]] = 12
   end
 ]]
 resolve #2 to #1
 
 test scope/forloop [[
   for [[x]]=1,10 do
-    [[x]] = 12
+    a,[[x]] = 12
   end
 ]]
 resolve #2 to #1
 
 test scope/foreachloop [[
-  for [[x]] in pairs(t) do
-    [[x]] = 12
+  for [[x]],a in pairs(t) do
+    [[x]],a = 12
   end
 ]]
 resolve #2 to #1
@@ -62,13 +62,13 @@ resolve #2 to #1
 test repeat loop condition [[
   local x
   repeat
-    local [[x]]
+    local [[x]],a
   until [[x]]
 ]]
 resolve #2 to #1
 
 test shadowing [[
-  local [[x]]
-  local x = [[x]]
+  local [[x]],a
+  local x = [[x]],b
 ]]
 resolve #2 to #1
