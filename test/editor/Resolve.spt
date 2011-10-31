@@ -3,26 +3,23 @@ module editor_Resolve
 
 start symbol Chunk
 
-// FIXME: all should be resolve #2 to #1 but Spoofax is broken (Spoofax/421)
-
 test global variable [[
-  do end --trick the SelectionFetcher...
   [[x]] = 12
   [[x]] = 13
 ]]
-resolve #6 to #2
+resolve #2 to #1
 
 test global function [[
   function [[fun]]() end
   [[fun]]()
 ]]
-resolve #4 to #3
+resolve #2 to #1
 
 test local variable [[
   local [[x]]
   [[x]] = 12
 ]]
-resolve #5 to #2
+resolve #2 to #1
 
 test local function [[
   local function [[fun]]() end
@@ -37,7 +34,7 @@ test scope/chunk (1) [[
     local x
   end
 ]]
-resolve #5 to #2
+resolve #2 to #1
 
 test scope/chunk (2) [[
   local x
@@ -46,21 +43,21 @@ test scope/chunk (2) [[
     [[x]] = 12
   end
 ]]
-resolve #5 to #2
+resolve #2 to #1
 
 test scope/forloop [[
   for [[x]]=1,10 do
     [[x]] = 12
   end
 ]]
-resolve #4 to #1
+resolve #2 to #1
 
 test scope/foreachloop [[
   for [[x]] in pairs(t) do
     [[x]] = 12
   end
 ]]
-resolve #5 to #2
+resolve #2 to #1
 
 test repeat loop condition [[
   local x
@@ -68,10 +65,10 @@ test repeat loop condition [[
     local [[x]]
   until [[x]]
 ]]
-resolve #4 to #2
+resolve #2 to #1
 
 test shadowing [[
   local [[x]]
   local x = [[x]]
 ]]
-resolve #5 to #2
+resolve #2 to #1
