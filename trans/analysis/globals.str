@@ -46,11 +46,13 @@ rules
   globals:
     Assignment(var*, exp*) -> <id>
     where
-      <all(try({x,d:
-        ?d@Var(x{});
-        not(<GlobalVarDef> x);
-        rules( GlobalVarDef : x -> d )
-      }))> var*;
+      <all({x,d:
+        if ?d@Var(x{})
+           ; where(<is-string> x) // Exclude COMPLETION(_) node
+           ; not(<GlobalVarDef> x) then
+          rules( GlobalVarDef : x -> d )
+        end
+      })> var*;
       <globals-top> exp*
 
   globals:
