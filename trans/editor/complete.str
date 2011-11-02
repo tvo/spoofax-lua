@@ -34,7 +34,7 @@ rules
     where
       proposals := <ContentProposalCache> position
     <+
-      {|ObjectId, TableField:
+      {|ObjectId, TypeOf, TableField:
         // ast' and node' are the desugared ast and node, respectively.
         ast' := <analyze> ast;
         // debug-type-analysis;
