@@ -1,0 +1,24 @@
+language Lua
+module editor_Resolve
+
+start symbol Chunk
+
+test global variable [[
+  aaa = 1
+  b,[[a]] = 2
+]]
+complete to "aaa"
+
+test local variable [[
+  local aaa = 1
+  b,[[a]] = 2
+]]
+complete to "aaa"
+
+// this cannot be tested currently ...
+
+// test global function [[
+// 	function aaa(foo, bar) end
+// 	[[a]]()
+// ]]
+// complete to "aaa"

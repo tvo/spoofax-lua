@@ -9,7 +9,7 @@ test break/for     [[ for _=1,10 do break end ]]
 test break/foreach [[ local pairs, t; for _ in pairs(t) do break end ]]
 
 test break/toplevel [[ break ]]
-1 errors
+1 errors /No loop to break/
 
 test break/function [[
   for x = 1,10 do
@@ -18,7 +18,7 @@ test break/function [[
     end)()
   end
 ]]
-1 errors
+1 error /No loop to break/
 
 test break/nested [[
   while false do repeat break until true break end
