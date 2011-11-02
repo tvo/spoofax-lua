@@ -3,11 +3,11 @@ The Complete Syntax of Lua
 
 Here is the complete syntax of Lua in extended BNF. (It does not describe operator precedences.)
 
-x   chunk ::= {stat [`;´]} [laststat [`;´]]
+    chunk ::= {stat [`;´]} [laststat [`;´]]
 
-x   block ::= chunk
+    block ::= chunk
 
-x   stat ::=  varlist `=´ explist |
+    stat ::=  varlist `=´ explist |
          functioncall |
          do block end |
          while exp do block end |
@@ -19,26 +19,26 @@ x   stat ::=  varlist `=´ explist |
          local function Name funcbody |
          local namelist [`=´ explist]
 
-x   laststat ::= return [explist] | break
+    laststat ::= return [explist] | break
 
     funcname ::= Name {`.´ Name} [`:´ Name]
 
     varlist ::= var {`,´ var}
 
-x   var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
+    var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
 
     namelist ::= Name {`,´ Name}
 
-x   explist ::= {exp `,´} exp
+    explist ::= {exp `,´} exp
 
-x   exp ::=  nil | false | true | Number | String | `...´ | function |
+    exp ::=  nil | false | true | Number | String | `...´ | function |
          prefixexp | tableconstructor | exp binop exp | unop exp
 
-x   prefixexp ::= var | functioncall | `(´ exp `)´
+    prefixexp ::= var | functioncall | `(´ exp `)´
 
-x   functioncall ::=  prefixexp args | prefixexp `:´ Name args
+    functioncall ::=  prefixexp args | prefixexp `:´ Name args
 
-x   args ::=  `(´ [explist] `)´ | tableconstructor | String
+    args ::=  `(´ [explist] `)´ | tableconstructor | String
 
     function ::= function funcbody
 
@@ -46,18 +46,18 @@ x   args ::=  `(´ [explist] `)´ | tableconstructor | String
 
     parlist ::= namelist [`,´ `...´] | `...´
 
-x   tableconstructor ::= `{´ [fieldlist] `}´
+    tableconstructor ::= `{´ [fieldlist] `}´
 
-x   fieldlist ::= field {fieldsep field} [fieldsep]
+    fieldlist ::= field {fieldsep field} [fieldsep]
 
-x   field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
+    field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
 
-x   fieldsep ::= `,´ | `;´
+    fieldsep ::= `,´ | `;´
 
-x   binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ |
+    binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ |
          `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ |
          and | or
 
-x   unop ::= `-´ | not | `#´
+    unop ::= `-´ | not | `#´
 
 Source: <http://www.lua.org/manual/5.1/manual.html#8>
